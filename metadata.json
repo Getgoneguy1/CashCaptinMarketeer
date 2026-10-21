@@ -1,0 +1,8 @@
+{
+  "name": "CashCaptin Marketeer",
+  "description": "Affiliate Search Tools Engine, Multi-Platform AI Copywriting & Hub Generator with real-time performance tracking and accounting.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
