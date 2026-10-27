@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Sparkles, Tag, Globe, Check } from 'lucide-react';
+import { Plus, Sparkles, Tag, Globe, Check, Image as ImageIcon, Upload, X } from 'lucide-react';
 
 interface OfferFormProps {
   onAddOffer: (offerData: {
@@ -8,6 +8,7 @@ interface OfferFormProps {
     affiliate_id: string;
     category?: string;
     target_url?: string;
+    image_url?: string;
   }) => Promise<void>;
 }
 
@@ -17,6 +18,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({ onAddOffer }) => {
   const [affiliateId, setAffiliateId] = useState('');
   const [category, setCategory] = useState('Digital Marketing');
   const [targetUrl, setTargetUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -31,13 +33,15 @@ export const OfferForm: React.FC<OfferFormProps> = ({ onAddOffer }) => {
         product_description: productDescription.trim(),
         affiliate_id: affiliateId.trim() || 'DEFAULT_AFF',
         category: category.trim(),
-        target_url: targetUrl.trim() || `https://example.com/offers/${encodeURIComponent(productName.toLowerCase().replace(/ /g, '-'))}`
+        target_url: targetUrl.trim() || `https://example.com/offers/${encodeURIComponent(productName.toLowerCase().replace(/ /g, '-'))}`,
+        image_url: imageUrl || undefined
       });
 
       setProductName('');
       setProductDescription('');
       setAffiliateId('');
       setTargetUrl('');
+      setImageUrl(null);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -46,6 +50,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({ onAddOffer }) => {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="bg-[#1e293b] rounded-lg p-5 border border-[#334155] shadow-lg mb-6">
@@ -143,7 +148,70 @@ export const OfferForm: React.FC<OfferFormProps> = ({ onAddOffer }) => {
           </div>
         </div>
 
+        {/* Product Picture Input (Upload or URL) */}
+        <div className="bg-[#0f172a] p-3.5 rounded-md border border-[#475569] space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs font-semibold text-[#cbd5e1] uppercase tracking-wider">
+              <ImageIcon className="w-4 h-4 text-sky-400" />
+              Product Picture / Ad Creative (Optional)
+            </label>
+            {imageUrl && (
+              <button
+                type="button"
+                onClick={() => setImageUrl(null)}
+                className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                Remove
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="url"
+              placeholder="Paste direct Image URL (e.g. https://.../product.png)"
+              value={imageUrl?.startsWith('data:') ? '' : imageUrl || ''}
+              onChange={(e) => setImageUrl(e.target.value.trim() || null)}
+              className="flex-1 px-3 py-2 bg-[#1e293b] border border-[#475569] rounded-md text-white text-xs focus:outline-none focus:border-[#3b82f6]"
+            />
+            <label className="px-3 py-2 rounded-md bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+              <Upload className="w-3.5 h-3.5 text-blue-400" />
+              <span>Upload Image File</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      if (typeof reader.result === 'string') {
+                        setImageUrl(reader.result);
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </label>
+          </div>
+
+          {imageUrl && (
+            <div className="flex items-center gap-3 pt-1">
+              <div className="w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/60 bg-slate-900 shrink-0">
+                <img src={imageUrl} alt="Offer Preview" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-xs text-emerald-400 font-medium">
+                Photo attached. This image will appear on your offer cards, ad previews, and buyer links.
+              </span>
+            </div>
+          )}
+        </div>
+
         <div className="pt-2">
+
           <button
             type="submit"
             disabled={isSubmitting}

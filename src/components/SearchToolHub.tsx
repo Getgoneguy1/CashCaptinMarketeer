@@ -45,10 +45,12 @@ export const SearchToolHub: React.FC<SearchToolHubProps> = ({
             <span>Back to Master Directory</span>
           </button>
 
-          <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-800/50">
-            Hub: output/{selectedOffer.product_name.toLowerCase().replace(/[^a-z0-9]/g, '_')}/index.html
+          <span className="text-xs font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800/50 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Live Offer Hub</span>
           </span>
         </div>
+
 
         {/* Hub Header */}
         <div className="bg-[#1e293b] p-6 rounded-xl border border-[#334155] shadow-xl text-center">
@@ -152,10 +154,12 @@ export const SearchToolHub: React.FC<SearchToolHubProps> = ({
           Master directory linking to all generated micro search hubs and promotional bridges.
         </p>
 
-        <span className="text-xs font-mono text-[#38bdf8] bg-[#0f172a] px-3 py-1 rounded border border-[#334155]">
-          Manifest: output/manifest.json ({offers.length} Offer Hubs)
+        <span className="text-xs font-bold text-sky-400 bg-[#0f172a] px-3.5 py-1.5 rounded-full border border-sky-500/30 inline-flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+          <span>{offers.length} Active Offer Hubs Published</span>
         </span>
       </div>
+
 
       <div className="space-y-3">
         {offers.map((offer) => {

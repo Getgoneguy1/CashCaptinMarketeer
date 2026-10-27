@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'tymesup4us@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'affiliateId', 'role', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid == request.auth.uid &&
+        data.email is string && data.email.size() <= 256 &&
+        data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    // Validation for Offer
+    function isValidOffer(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'product_name', 'affiliate_id', 'created_at']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId == userId &&
+        data.product_name is string && data.product_name.size() > 0 && data.product_name.size() <= 300 &&
+        data.affiliate_id is string && data.affiliate_id.size() <= 100 &&
+        data.created_at is string && data.created_at.size() <= 64;
+    }
+
+    // Validation for ClickEvent
+    function isValidClickEvent(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'offerId', 'targetUrl', 'timestamp']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId == userId &&
+        data.offerId is string && data.offerId.size() <= 128 &&
+        data.targetUrl is string && data.targetUrl.size() <= 2048 &&
+        data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    // Validation for SocialAd
+    function isValidSocialAd(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'platform', 'headline', 'bodyText', 'status']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId == userId &&
+        data.platform is string && data.platform.size() <= 50 &&
+        data.headline is string && data.headline.size() <= 300 &&
+        data.bodyText is string && data.bodyText.size() <= 10000 &&
+        data.status is string && (data.status in ['draft', 'scheduled', 'dispatched', 'live']);
+    }
+
+    // Validation for SaleAlert
+    function isValidSaleAlert(data) {
+      return data.keys().hasAll(['id', 'tierName', 'amount', 'timestamp']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.tierName is string && data.tierName.size() <= 120 &&
+        data.amount is number && data.amount >= 0 &&
+        data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    // Catch-all deny rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User profile documents (strictly isolated per user)
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && isValidUserProfile(incoming()) && incoming().uid == existing().uid;
+      allow delete: if isOwner(userId) || isAdmin();
+
+      // Offers subcollection
+      match /offers/{offerId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidId(offerId) && isValidOffer(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(offerId) && isValidOffer(incoming(), userId) && incoming().userId == existing().userId;
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // Click events subcollection
+      match /click_events/{clickId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidId(clickId) && isValidClickEvent(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(clickId) && isValidClickEvent(incoming(), userId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // Social Ads subcollection (Multi-outlet ads for FB, Instagram, TikTok, etc.)
+      match /social_ads/{adId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidId(adId) && isValidSocialAd(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(adId) && isValidSocialAd(incoming(), userId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // App Purchase & Commercial Sales Alerts (Creator alert pipeline)
+    match /sales_alerts/{alertId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(alertId) && isValidSaleAlert(incoming());
+      allow update, delete: if isAdmin();
+    }
+  }
+}

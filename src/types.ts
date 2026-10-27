@@ -21,9 +21,75 @@ export interface PlatformCopy {
   micro_search_tools: MicroSearchTool[];
 }
 
+export type ProductMarketplaceCategory =
+  | 'saas_digital'
+  | 'electronics_tech'
+  | 'apparel_fashion'
+  | 'b2b_commodities'
+  | 'travel_experiences'
+  | 'general_marketplaces'
+  | 'custom';
+
+export interface CategoryCorrelationItem {
+  categoryId: ProductMarketplaceCategory;
+  categoryTitle: string;
+  categoryIcon: string;
+  isPrimary: boolean;
+  correlationReason: string;
+  topMarketplaces: string;
+  primaryAdChannel: string;
+  adRole: 'Primary Engine' | 'Correlated Ad Channel' | 'Cross-Platform Expansion';
+  platforms?: { name: string; type: string; urlTemplate: string; buyerFocus: string }[];
+}
+
+
+export interface ProductCorrelationProfile {
+  primaryCategory: ProductMarketplaceCategory;
+  correlatedCategories: ProductMarketplaceCategory[];
+  allCategories: ProductMarketplaceCategory[];
+  breakdowns: CategoryCorrelationItem[];
+  allPlatforms: { name: string; type: string; urlTemplate: string; buyerFocus: string; categoryTitle: string }[];
+  excludedChannels: string[];
+  combinedAdSummary: string;
+}
+
+
+export type BuyerChannelCategory =
+  | 'saas_digital'
+  | 'electronics_tech'
+  | 'apparel_fashion'
+  | 'b2b_commodities'
+  | 'travel_experiences'
+  | 'general_marketplaces'
+  | 'want_ads'
+  | 'comparison'
+  | 'review_trust'
+  | 'gumroad'
+  | 'daily_trends'
+  | 'pinterest'
+  | 'linkedin'
+  | 'instagram'
+  | 'community';
+
 export interface BuyerLead {
   id: string;
-  platform: 'Reddit' | 'Quora' | 'Forum' | 'Twitter/X' | 'Facebook Group';
+  platform:
+    | 'Reddit'
+    | 'Quora'
+    | 'Forum'
+    | 'Twitter/X'
+    | 'Facebook Group'
+    | 'Want Ads (Marketplace/Craigslist)'
+    | 'Comparison (Versus / AlternativeTo)'
+    | 'Trustpilot & Yelp Reviews'
+    | 'Gumroad Discover'
+    | 'Daily Trends (Google & Amazon)'
+    | 'Pinterest'
+    | 'LinkedIn'
+    | 'Instagram'
+    | string;
+  channelCategory?: BuyerChannelCategory;
+  marketplaceName?: string;
   communityName: string;
   threadTitle: string;
   threadUrl: string;
@@ -31,8 +97,9 @@ export interface BuyerLead {
   buyerPainPoint: string;
   tailoredAdCopy: string;
   affiliateDeepLink: string;
-  status: 'Discovered' | 'Ready to Post' | 'Posted' | 'Auto-Deployed';
+  status: 'Discovered' | 'Ready to Post' | 'Posted' | 'Auto-Deployed' | 'Auto-Placed & Live';
   postedAt?: string;
+  impressions?: number;
 }
 
 export interface Offer {

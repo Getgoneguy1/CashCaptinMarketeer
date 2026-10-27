@@ -1,7 +1,8 @@
 import React from 'react';
-import { Search, Sparkles, FolderGit2, Link2, UploadCloud, TrendingUp, RefreshCw, Crosshair } from 'lucide-react';
+import { Search, Sparkles, FolderGit2, Link2, UploadCloud, TrendingUp, RefreshCw, Crosshair, Mail, Share2, Flame, Globe, BookOpen, Download } from 'lucide-react';
 
-export type NavTab = 'autopilot' | 'offers' | 'copy' | 'hubs' | 'affiliate_pro' | 'ledger';
+export type NavTab = 'autopilot' | 'offers' | 'copy' | 'hubs' | 'social' | 'affiliate_pro' | 'ledger' | 'sales' | 'utilities';
+
 
 interface HeaderProps {
   activeTab: NavTab;
@@ -11,6 +12,10 @@ interface HeaderProps {
   isBuilding: boolean;
   onRebuild: () => void;
   onOpenBulkAdd: () => void;
+  onOpenEmailModal: () => void;
+  onOpenSocialBlast: () => void;
+  onOpenFirebaseGuide: () => void;
+  onOpenUserGuide: () => void;
   affiliateProEnabled: boolean;
 }
 
@@ -22,6 +27,10 @@ export const Header: React.FC<HeaderProps> = ({
   isBuilding,
   onRebuild,
   onOpenBulkAdd,
+  onOpenEmailModal,
+  onOpenSocialBlast,
+  onOpenFirebaseGuide,
+  onOpenUserGuide,
   affiliateProEnabled
 }) => {
   return (
@@ -29,15 +38,24 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <Crosshair className="w-5 h-5 stroke-[2.5]" />
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-600 to-blue-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20 text-lg">
+              ⚔️
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white">CashCaptin AI</h1>
-                <span className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono border border-blue-500/30">
-                  Auto-Pilot Placer
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-black tracking-tight text-white">Cash Captain Marketeer™</h1>
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40" title="Created by Ty Birchfield • Y.W.G.T Online! A Virbis.com Company">
+                  Y.W.G.T Online! • A Virbis.com Company
                 </span>
+                {/* Firebase Live Badge */}
+                <button
+                  onClick={onOpenFirebaseGuide}
+                  className="text-xs px-2.5 py-0.5 rounded-full bg-orange-500/15 hover:bg-orange-500/25 text-orange-400 font-bold border border-orange-500/30 flex items-center gap-1 transition-all cursor-pointer"
+                  title="Firebase Database & Free Hosting Status"
+                >
+                  <Flame className="w-3 h-3 text-orange-400" />
+                  <span>Firebase Live</span>
+                </button>
                 {affiliateProEnabled && (
                   <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30">
                     &bull; Affiliate Pro Linked
@@ -45,35 +63,43 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
               <p className="text-xs text-[#94a3b8]">
-                Autonomous Web Scraping, Buyer Discovery & Ad Placement Engine
+                Autonomous AI Buyer Radar, Zero-Ban Compliance & Automatic Link Placement
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Social Media Blast Button */}
             <button
-              onClick={onOpenBulkAdd}
-              className="px-3.5 py-2 rounded-md font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-[#334155] transition-all flex items-center gap-1.5 cursor-pointer"
+              onClick={() => setActiveTab('social')}
+              className="px-3.5 py-2 rounded-md font-bold text-xs bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-pink-500/20"
+              title="Syndicate Advertisements to Facebook, Instagram, TikTok, X, Reddit"
             >
-              <UploadCloud className="w-3.5 h-3.5 text-blue-400" />
-              <span>Bulk Add</span>
+              <Share2 className="w-3.5 h-3.5 text-amber-200" />
+              <span>Social Blast</span>
             </button>
 
+            {/* Email Reports & Alerts */}
             <button
-              onClick={onRebuild}
-              disabled={isBuilding}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-semibold text-xs text-white transition-all shadow-sm ${
-                isBuilding
-                  ? 'bg-slate-700 cursor-not-allowed text-slate-400'
-                  : 'bg-emerald-600 hover:bg-emerald-500'
-              }`}
-              title="Sync all search tools and manifests"
+              onClick={onOpenEmailModal}
+              className="px-3.5 py-2 rounded-md font-semibold text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Configure Email Reports and Sales Alerts"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isBuilding ? 'animate-spin' : ''}`} />
-              <span>{isBuilding ? 'Syncing...' : 'Sync All'}</span>
+              <Mail className="w-3.5 h-3.5 text-amber-400" />
+              <span>Email Alerts</span>
+            </button>
+
+            {/* Buy License Header Button */}
+            <button
+              onClick={() => setActiveTab('sales')}
+              className="px-3.5 py-2 rounded-md font-extrabold text-xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/25 ring-1 ring-amber-400"
+              title="Buy Cash Captain Marketeer License"
+            >
+              <span>💳 Buy License</span>
             </button>
           </div>
         </div>
+
 
         {/* Tab navigation */}
         <div className="flex items-center gap-1 sm:gap-2 mt-3 border-t border-[#334155]/60 pt-2 overflow-x-auto">
@@ -128,6 +154,18 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('social')}
+            className={`px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'social'
+                ? 'bg-gradient-to-r from-pink-600 via-rose-600 to-amber-500 text-white shadow-lg shadow-pink-500/25 ring-1 ring-pink-400'
+                : 'text-pink-300 hover:text-white hover:bg-pink-500/10'
+            }`}
+          >
+            <Share2 className="w-4 h-4 text-amber-300" />
+            <span>📢 Social Blast Hub</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('affiliate_pro')}
             className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'affiliate_pro'
@@ -156,7 +194,32 @@ export const Header: React.FC<HeaderProps> = ({
               {totalClicks}
             </span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('sales')}
+            className={`px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'sales'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 ring-1 ring-amber-400'
+                : 'text-amber-300 hover:text-white hover:bg-amber-500/10 border border-amber-500/40'
+            }`}
+          >
+            <span>💳 Buy License (PayPal)</span>
+          </button>
+
+          {/* Very Last Page on Menu Slider: Utilities & Backup */}
+          <button
+            onClick={() => setActiveTab('utilities')}
+            className={`px-3.5 py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'utilities'
+                ? 'bg-slate-700 text-white shadow-md ring-1 ring-slate-400 font-extrabold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/80 border border-slate-700/60'
+            }`}
+            title="System Utilities, Manuals, Bulk Importer, and Backups"
+          >
+            <span>🛠️ Utilities & Backup</span>
+          </button>
         </div>
+
       </div>
     </header>
   );

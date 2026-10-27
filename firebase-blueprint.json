@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing personal account settings and isolated affiliate identity",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user authentication UID" },
+        "email": { "type": "string", "format": "email", "description": "User notification email" },
+        "affiliateId": { "type": "string", "description": "User default affiliate identifier" },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "User permission role" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Offer": {
+      "title": "Offer",
+      "description": "Affiliate product marketing campaign and offer profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Offer identifier" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "product_name": { "type": "string", "description": "Product or offer title" },
+        "product_description": { "type": "string", "description": "Full product description and benefits" },
+        "affiliate_id": { "type": "string", "description": "Affiliate ID attached to offer" },
+        "category": { "type": "string", "description": "Offer niche category" },
+        "target_url": { "type": "string", "description": "Target destination URL" },
+        "clicks": { "type": "number", "description": "Total trackable click count" },
+        "conversions": { "type": "number", "description": "Total completed conversion count" },
+        "revenue": { "type": "number", "description": "Total generated commission revenue" },
+        "created_at": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["id", "userId", "product_name", "affiliate_id", "created_at"]
+    },
+    "ClickEvent": {
+      "title": "ClickEvent",
+      "description": "Logged traffic redirection or link visit event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique click ID" },
+        "userId": { "type": "string", "description": "Owner UID who generated link" },
+        "offerId": { "type": "string", "description": "Associated offer ID" },
+        "offerName": { "type": "string", "description": "Name of offer clicked" },
+        "affiliateId": { "type": "string", "description": "Affiliate code" },
+        "targetUrl": { "type": "string", "description": "Final outbound redirect target" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Click event time" },
+        "converted": { "type": "boolean", "description": "Whether click resulted in sale" }
+      },
+      "required": ["id", "userId", "offerId", "targetUrl", "timestamp"]
+    },
+    "SocialAd": {
+      "title": "SocialAd",
+      "description": "Multi-outlet advertising creative syndicated to social media channels",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Ad creative unique ID" },
+        "userId": { "type": "string", "description": "Owner UID" },
+        "offerId": { "type": "string", "description": "Associated offer ID" },
+        "platform": { "type": "string", "enum": ["Facebook", "Instagram", "TikTok", "Twitter", "Reddit", "LinkedIn"], "description": "Target social media network" },
+        "headline": { "type": "string", "description": "Ad headline or post hook" },
+        "bodyText": { "type": "string", "description": "Ad copy content and call to action" },
+        "hashtags": { "type": "string", "description": "Hashtags for viral reach" },
+        "deepLink": { "type": "string", "description": "Affiliate destination link" },
+        "status": { "type": "string", "enum": ["draft", "scheduled", "dispatched", "live"], "description": "Delivery status" },
+        "dispatchedAt": { "type": "string", "format": "date-time", "description": "Timestamp when syndicated" }
+      },
+      "required": ["id", "userId", "platform", "headline", "bodyText", "status"]
+    },
+    "SaleAlert": {
+      "title": "SaleAlert",
+      "description": "Notification record when someone buys the app or commercial license",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Sales alert ID" },
+        "tierName": { "type": "string", "description": "Plan or license name purchased" },
+        "amount": { "type": "number", "description": "Sale amount in USD" },
+        "buyerEmail": { "type": "string", "format": "email", "description": "Buyer email address" },
+        "buyerName": { "type": "string", "description": "Buyer full name or company" },
+        "transactionId": { "type": "string", "description": "Payment transaction ID" },
+        "licenseKey": { "type": "string", "description": "Generated commercial key" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Timestamp of sale" },
+        "status": { "type": "string", "enum": ["recorded", "notified", "delivered"], "description": "Notification delivery state" }
+      },
+      "required": ["id", "tierName", "amount", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user account profile and individual settings"
+    },
+    "/users/{userId}/offers/{offerId}": {
+      "schema": "Offer",
+      "description": "User-specific affiliate products and marketing hubs"
+    },
+    "/users/{userId}/click_events/{clickId}": {
+      "schema": "ClickEvent",
+      "description": "User-specific click traffic tracking ledger"
+    },
+    "/users/{userId}/social_ads/{adId}": {
+      "schema": "SocialAd",
+      "description": "User social media advertisement campaigns across Facebook, IG, TikTok, etc."
+    },
+    "/sales_alerts/{alertId}": {
+      "schema": "SaleAlert",
+      "description": "Commercial app purchase events notifying creator"
+    }
+  }
+}

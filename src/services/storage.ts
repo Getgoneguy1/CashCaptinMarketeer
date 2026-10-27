@@ -1,6 +1,7 @@
 import { Offer, TrackingMetrics, ClickEvent, BuildLogEntry, AffiliateProConfig } from '../types';
 import { INITIAL_OFFERS, INITIAL_TRACKING } from '../data/initialData';
 import { generateMarketingStrategy } from './aiGenerator';
+import { syncOfferToCloud, syncClickToCloud } from './firestoreSync';
 
 const STORAGE_KEYS = {
   OFFERS: 'cashcaptin_offers',
@@ -24,7 +25,25 @@ export function getStoredOffers(): Offer[] {
       saveOffers(INITIAL_OFFERS);
       return INITIAL_OFFERS;
     }
-    return JSON.parse(raw);
+    const parsed: Offer[] = JSON.parse(raw);
+    // Purge any legacy placeholder demo offers that had example.com or telly/tely
+    const cleanOffers = parsed.filter(
+      (o) =>
+        !o.target_url?.includes('example.com') &&
+        !o.target_url?.toLowerCase().includes('tely') &&
+        !o.target_url?.toLowerCase().includes('telly') &&
+        !o.product_name?.toLowerCase().includes('tely') &&
+        !o.product_name?.toLowerCase().includes('telly') &&
+        !o.id.startsWith('offer-1') &&
+        !o.id.startsWith('offer-2') &&
+        !o.id.startsWith('offer-3') &&
+        !o.id.startsWith('offer-4')
+    );
+    if (cleanOffers.length === 0) {
+      saveOffers(INITIAL_OFFERS);
+      return INITIAL_OFFERS;
+    }
+    return cleanOffers;
   } catch (err) {
     console.error('Failed to load offers from localStorage', err);
     return INITIAL_OFFERS;
@@ -34,6 +53,10 @@ export function getStoredOffers(): Offer[] {
 export function saveOffers(offers: Offer[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.OFFERS, JSON.stringify(offers));
+    // Asynchronously synchronize to Firestore cloud
+    offers.forEach((o) => {
+      syncOfferToCloud(o).catch((e) => console.warn('Cloud offer sync warning', e));
+    });
   } catch (err) {
     console.error('Failed to save offers', err);
   }
@@ -115,6 +138,7 @@ export function recordClick(
   const updatedEvents = [newEvent, ...currentClicks].slice(0, 100);
   try {
     localStorage.setItem(STORAGE_KEYS.CLICKS, JSON.stringify(updatedEvents));
+    syncClickToCloud(newEvent).catch((e) => console.warn('Cloud click sync warning', e));
   } catch (err) {
     console.error('Failed to save click event', err);
   }

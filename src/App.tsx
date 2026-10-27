@@ -26,7 +26,17 @@ import { SearchToolWidget } from './components/SearchToolWidget';
 import { BulkOfferModal } from './components/BulkOfferModal';
 import { AffiliateProConnect } from './components/AffiliateProConnect';
 import { PromoCopyCenter } from './components/PromoCopyCenter';
+import { CommercialSalesKit } from './components/CommercialSalesKit';
+import { LandingPagePreview } from './components/LandingPagePreview';
+import { EmailReportModal } from './components/EmailReportModal';
+import { SocialMediaBlastModal } from './components/SocialMediaBlastModal';
+import { SocialMediaCommandCenter } from './components/SocialMediaCommandCenter';
+import { FirebaseLiveGuideModal } from './components/FirebaseLiveGuideModal';
+import { UserGuideModal } from './components/UserGuideModal';
+import { UtilitiesPage } from './components/UtilitiesPage';
+import { checkAndTriggerWeeklySchedule } from './services/emailReportService';
 import { PlusCircle, UploadCloud } from 'lucide-react';
+
 
 export const App: React.FC = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -46,9 +56,52 @@ export const App: React.FC = () => {
   const [isBuilding, setIsBuilding] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<NavTab>('autopilot');
 
+  // Dedicated Landing Page state for external visitors arriving from ads / links
+  const [showExternalLanding, setShowExternalLanding] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      const pathname = window.location.pathname.toLowerCase();
+      return (
+        search.includes('page=landing') ||
+        search.includes('landing') ||
+        search.includes('ref=') ||
+        hash === '#landing' ||
+        hash === '#pricing' ||
+        hash === '#sales' ||
+        pathname.endsWith('/landing')
+      );
+    }
+    return false;
+  });
+
+  // Listen for hash changes so users/buttons can toggle #landing easily
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      if (
+        hash === '#landing' ||
+        hash === '#pricing' ||
+        hash === '#sales' ||
+        search.includes('page=landing') ||
+        search.includes('landing') ||
+        search.includes('ref=')
+      ) {
+        setShowExternalLanding(true);
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   // Modals
   const [showBulkModal, setShowBulkModal] = useState<boolean>(false);
   const [showSingleAddForm, setShowSingleAddForm] = useState<boolean>(false);
+  const [showEmailModal, setShowEmailModal] = useState<boolean>(false);
+  const [showSocialBlastModal, setShowSocialBlastModal] = useState<boolean>(false);
+  const [showFirebaseGuideModal, setShowFirebaseGuideModal] = useState<boolean>(false);
+  const [showUserGuideModal, setShowUserGuideModal] = useState<boolean>(false);
   const [activeModalTool, setActiveModalTool] = useState<{
     tool: MicroSearchTool;
     offer: Offer;
@@ -66,6 +119,11 @@ export const App: React.FC = () => {
     setTracking(loadedTracking);
     setClickEvents(loadedClicks);
     setAffiliateProConfig(loadedPro);
+
+    // Automated weekly schedule check (dispatches weekly briefing if 7 days elapsed)
+    checkAndTriggerWeeklySchedule(loadedTracking, loadedOffers, []).catch((e) =>
+      console.warn('Scheduled email check', e)
+    );
 
     setBuildLogs([
       {
@@ -114,6 +172,7 @@ export const App: React.FC = () => {
     affiliate_id: string;
     category?: string;
     target_url?: string;
+    image_url?: string;
   }) => {
     const aiData = await generateMarketingStrategy(
       offerData.product_name,
@@ -128,6 +187,7 @@ export const App: React.FC = () => {
       affiliate_id: offerData.affiliate_id,
       category: offerData.category || 'Digital Marketing',
       target_url: offerData.target_url,
+      image_url: offerData.image_url,
       keywords: aiData.keywords,
       platform_copy: aiData,
       created_at: new Date().toISOString(),
@@ -135,6 +195,7 @@ export const App: React.FC = () => {
       conversions: 0,
       revenue: 0
     };
+
 
     const updated = [newOffer, ...offers];
     setOffers(updated);
@@ -262,6 +323,20 @@ export const App: React.FC = () => {
     saveAffiliatePro(cfg);
   };
 
+  // If visitor arrives at the ad landing page URL (?page=landing or #landing or ?ref=...)
+  if (showExternalLanding) {
+    return (
+      <LandingPagePreview
+        onEnterApp={() => {
+          setShowExternalLanding(false);
+          if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-[#f8fafc] flex flex-col selection:bg-blue-600 selection:text-white">
       <Header
@@ -275,6 +350,10 @@ export const App: React.FC = () => {
         isBuilding={isBuilding}
         onRebuild={handleRebuildAll}
         onOpenBulkAdd={() => setShowBulkModal(true)}
+        onOpenEmailModal={() => setShowEmailModal(true)}
+        onOpenSocialBlast={() => setShowSocialBlastModal(true)}
+        onOpenFirebaseGuide={() => setShowFirebaseGuideModal(true)}
+        onOpenUserGuide={() => setShowUserGuideModal(true)}
         affiliateProEnabled={affiliateProConfig.enabled}
       />
 
@@ -286,6 +365,7 @@ export const App: React.FC = () => {
             onSaveNewOffer={handleSaveNewOffer}
             affiliateProConfig={affiliateProConfig}
             onRecordClick={handleRecordClick}
+            onOpenEmailModal={() => setShowEmailModal(true)}
           />
         )}
 
@@ -361,6 +441,14 @@ export const App: React.FC = () => {
           />
         )}
 
+        {/* TAB: SOCIAL MEDIA COMMAND CENTER & AD BLAST */}
+        {activeTab === 'social' && (
+          <SocialMediaCommandCenter
+            offers={offers}
+            selectedOffer={selectedHubOffer}
+          />
+        )}
+
         {/* TAB 4: CONNECT AFFILIATE PRO */}
         {activeTab === 'affiliate_pro' && (
           <AffiliateProConnect
@@ -399,7 +487,26 @@ export const App: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* TAB 6: COMMERCIAL SALES KIT & PAYPAL CHECKOUT */}
+        {activeTab === 'sales' && (
+          <CommercialSalesKit />
+        )}
+
+        {/* TAB 7 (VERY LAST PAGE): SYSTEM UTILITIES & BACKUP */}
+        {activeTab === 'utilities' && (
+          <UtilitiesPage
+            offers={offers}
+            tracking={tracking}
+            isBuilding={isBuilding}
+            onRebuild={handleRebuildAll}
+            onOpenBulkAdd={() => setShowBulkModal(true)}
+            onOpenUserGuide={() => setShowUserGuideModal(true)}
+            onOpenFirebaseGuide={() => setShowFirebaseGuideModal(true)}
+          />
+        )}
       </main>
+
 
       {/* Modal: Bulk Add Offers */}
       {showBulkModal && (
@@ -422,17 +529,58 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* Modal: Automated Email Reports & Sales Alerts */}
+      <EmailReportModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        tracking={tracking}
+        offers={offers}
+        leads={[]}
+      />
+
+      {/* Modal: Social Media Multi-Outlet Advertisement Command Center */}
+      <SocialMediaBlastModal
+        isOpen={showSocialBlastModal}
+        onClose={() => setShowSocialBlastModal(false)}
+        offers={offers}
+        selectedOffer={offers[0]}
+      />
+
+      {/* Modal: Firebase Hosting and Cloud Command Center */}
+      <FirebaseLiveGuideModal
+        isOpen={showFirebaseGuideModal}
+        onClose={() => setShowFirebaseGuideModal(false)}
+      />
+
+      {/* Modal: Complete User Guide & Operating Manual */}
+      <UserGuideModal
+        isOpen={showUserGuideModal}
+        onClose={() => setShowUserGuideModal(false)}
+        onNavigateTab={(tab) => {
+          setActiveTab(tab);
+          setShowUserGuideModal(false);
+        }}
+      />
+
       {/* Footer */}
-      <footer className="border-t border-[#334155]/60 bg-[#1e293b]/60 py-4 mt-12 text-center text-xs text-[#64748b]">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>
-            CashCaptin AI &bull; Autonomous Affiliate Placement Engine
-          </span>
-          <span className="font-mono text-[11px] text-[#94a3b8]">
-            {affiliateProConfig.enabled ? 'Linked to Affiliate Pro' : 'Auto-Pilot Placement Active'}
-          </span>
+      <footer className="border-t border-[#334155]/60 bg-[#1e293b]/90 py-5 mt-12 text-xs text-[#94a3b8]">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-white tracking-wide">⚔️ Cash Captain Marketeer™</span>
+            <span>&bull;</span>
+            <span className="text-slate-300">Created by <strong className="text-white">Ty Birchfield</strong></span>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Encrypted PayPal Ready
+            </span>
+            <span>&bull;</span>
+            <span>All Rights Reserved</span>
+          </div>
         </div>
       </footer>
+
     </div>
   );
 };

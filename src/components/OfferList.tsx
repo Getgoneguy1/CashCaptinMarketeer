@@ -111,24 +111,36 @@ export const OfferList: React.FC<OfferListProps> = ({
                 onClick={() => toggleExpand(offer.id)}
                 className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer hover:bg-slate-800/40 transition-colors"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold text-white hover:text-blue-400 transition-colors">
-                      {offer.product_name}
-                    </h3>
-                    <code className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">
-                      Tag: {offer.affiliate_id}
-                    </code>
-                    {offer.category && (
-                      <span className="text-xs text-[#94a3b8] bg-[#1e293b] px-2 py-0.5 rounded border border-[#334155]">
-                        {offer.category}
-                      </span>
-                    )}
+                <div className="flex items-center gap-3">
+                  {offer.image_url && (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-[#475569] bg-slate-900 shrink-0">
+                      <img
+                        src={offer.image_url}
+                        alt={offer.product_name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-base font-bold text-white hover:text-blue-400 transition-colors">
+                        {offer.product_name}
+                      </h3>
+                      <code className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">
+                        Tag: {offer.affiliate_id}
+                      </code>
+                      {offer.category && (
+                        <span className="text-xs text-[#94a3b8] bg-[#1e293b] px-2 py-0.5 rounded border border-[#334155]">
+                          {offer.category}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#94a3b8] line-clamp-1">
+                      {offer.product_description}
+                    </p>
                   </div>
-                  <p className="text-xs text-[#94a3b8] line-clamp-1">
-                    {offer.product_description}
-                  </p>
                 </div>
+
 
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-3 text-xs text-[#cbd5e1] font-mono bg-[#1e293b] px-3 py-1.5 rounded border border-[#334155]">
