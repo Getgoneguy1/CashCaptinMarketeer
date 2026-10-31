@@ -421,12 +421,12 @@ ${affiliateDeepLink}
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-pink-950/60 via-purple-950/50 to-slate-900 border border-pink-500/30 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-44 h-44 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-44 h-44 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-pink-500/25 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[#060913] border border-slate-700 flex items-center justify-center text-emerald-400 text-2xl shadow-inner shrink-0">
               📢
             </div>
             <div>
@@ -434,7 +434,7 @@ ${affiliateDeepLink}
                 <h2 className="text-xl font-black text-white tracking-tight">
                   Social Media Multi-Outlet Advertisement Command Hub
                 </h2>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/40">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   8-Outlet Syndication
                 </span>
               </div>
@@ -450,13 +450,13 @@ ${affiliateDeepLink}
             <button
               onClick={handleBlastAll}
               disabled={isBlasting}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-pink-500/30 w-full sm:w-auto ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl w-full sm:w-auto ${
                 isBlasting
-                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-pink-600 via-rose-600 to-amber-500 hover:from-pink-500 hover:to-amber-400 text-white animate-pulse'
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20 hover:scale-[1.02]'
               }`}
             >
-              <Flame className="w-4 h-4 text-amber-300" />
+              <Flame className="w-4 h-4 text-slate-950" />
               <span>
                 {isBlasting ? 'Syndicating Across Networks...' : '🚀 Blast To All Outlets Now'}
               </span>
@@ -474,16 +474,16 @@ ${affiliateDeepLink}
       </div>
 
       {/* Target Selector & Campaign Settings Bar */}
-      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* Mode Switcher */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-300 whitespace-nowrap">Campaign Target:</span>
-          <div className="flex items-center bg-slate-900 p-1 rounded-lg border border-[#334155]">
+          <div className="flex items-center bg-[#060913] p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => setSelectedMode('offer')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 selectedMode === 'offer'
-                  ? 'bg-blue-600 text-white shadow'
+                  ? 'bg-emerald-500 text-slate-950 shadow'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -491,10 +491,10 @@ ${affiliateDeepLink}
             </button>
             <button
               onClick={() => setSelectedMode('app')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 selectedMode === 'app'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow'
-                  : 'text-amber-400 hover:text-amber-300'
+                  ? 'bg-amber-400 text-slate-950 shadow'
+                  : 'text-amber-400/80 hover:text-amber-300'
               }`}
             >
               💰 Sell Cash Captain App (PayPal)
@@ -511,7 +511,7 @@ ${affiliateDeepLink}
             <select
               value={selectedOfferId}
               onChange={(e) => setSelectedOfferId(e.target.value)}
-              className="bg-slate-800 border border-[#334155] rounded-lg px-3 py-1.5 text-xs text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              className="bg-[#060913] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 font-semibold focus:outline-none focus:border-emerald-500 w-full"
             >
               {offers.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -521,8 +521,8 @@ ${affiliateDeepLink}
             </select>
           </div>
         ) : (
-          <div className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <div className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3.5 py-2 rounded-xl flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span>Target: Cash Captain Marketeer License (Payments route to your PayPal)</span>
           </div>
         )}
@@ -533,7 +533,7 @@ ${affiliateDeepLink}
           <select
             value={campaignTone}
             onChange={(e) => setCampaignTone(e.target.value as any)}
-            className="bg-slate-800 border border-[#334155] rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-medium focus:outline-none focus:ring-1 focus:ring-pink-500"
+            className="bg-[#060913] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-emerald-500"
           >
             <option value="viral_curiosity">🔥 Viral Curiosity & Hook</option>
             <option value="high_urgency">🚨 High Urgency & Scarcity</option>
@@ -544,11 +544,11 @@ ${affiliateDeepLink}
       </div>
 
       {/* Embedded Deep Link Display & Live App URL Configuration */}
-      <div className="bg-slate-900/90 border border-[#334155] rounded-xl p-3.5 space-y-2.5 text-xs">
+      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-5 space-y-3 text-xs shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 flex-1 min-w-0 w-full">
             <span className="font-bold text-slate-300 whitespace-nowrap flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <Globe className="w-3.5 h-3.5 text-emerald-400" />
               Live Destination URL:
             </span>
             <input
@@ -556,12 +556,12 @@ ${affiliateDeepLink}
               value={customLiveUrl}
               onChange={(e) => handleCustomUrlChange(e.target.value)}
               placeholder="https://..."
-              className="bg-slate-950 font-mono text-cyan-300 px-3 py-1.5 rounded-lg border border-slate-700/80 focus:outline-none focus:ring-1 focus:ring-cyan-500 flex-1 text-xs"
+              className="bg-[#060913] font-mono text-emerald-400 px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-emerald-500 flex-1 text-xs"
             />
             <button
               onClick={() => handleCustomUrlChange(DEFAULT_APP_URL)}
               title="Reset to verified live server URL"
-              className="px-2 py-1 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700 whitespace-nowrap cursor-pointer"
+              className="px-2.5 py-1.5 text-[11px] rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 whitespace-nowrap cursor-pointer transition-colors"
             >
               Reset Default
             </button>
@@ -570,23 +570,23 @@ ${affiliateDeepLink}
             href={affiliateDeepLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 text-xs font-semibold border border-cyan-500/30 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+            <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
             <span>Test Live URL</span>
           </a>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 border-t border-slate-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2.5 border-t border-slate-800">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="font-bold text-slate-400 whitespace-nowrap">Syndication Embed Link:</span>
-            <span className="font-mono text-emerald-400 truncate bg-slate-950 px-2.5 py-1 rounded border border-slate-800 flex-1">
+            <span className="font-mono text-emerald-400 truncate bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800 flex-1">
               {affiliateDeepLink}
             </span>
           </div>
           <button
             onClick={() => handleCopy(affiliateDeepLink, 'target_link')}
-            className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
           >
             {copiedPlatform === 'target_link' ? (
               <>
@@ -604,16 +604,16 @@ ${affiliateDeepLink}
       </div>
 
       {/* Platform Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#334155] pb-2 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-slate-850 pb-2 overflow-x-auto">
         {['All', 'Facebook', 'Instagram', 'TikTok', 'Twitter', 'Reddit', 'LinkedIn', 'WhatsApp', 'Pinterest'].map(
           (p) => (
             <button
               key={p}
               onClick={() => setActivePlatformTab(p)}
-              className={`px-3.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 activePlatformTab === p
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20'
+                  : 'bg-[#0c1222] text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-700'
               }`}
             >
               {p === 'All' ? '🌐 All Outlets (8)' : p}
@@ -627,16 +627,16 @@ ${affiliateDeepLink}
         {filteredAds.map((ad) => (
           <div
             key={ad.platform}
-            className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 hover:border-slate-500 transition-all shadow-lg flex flex-col"
+            className="bg-[#0c1222] border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all shadow-xl flex flex-col"
           >
             {/* Ad Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-[#334155] flex-wrap gap-3">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-800/80 flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{ad.platformIcon}</span>
                 <div>
                   <h3 className="text-base font-black text-white flex items-center gap-2">
                     {ad.platform} Advertisement
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                       {ad.badge}
                     </span>
                   </h3>
@@ -647,7 +647,7 @@ ${affiliateDeepLink}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleCopy(ad.bodyText, ad.platform)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   {copiedPlatform === ad.platform ? (
                     <>
@@ -667,7 +667,7 @@ ${affiliateDeepLink}
                     href={ad.directShareUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-emerald-500/20"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     <span>{ad.ctaText}</span>
@@ -678,25 +678,25 @@ ${affiliateDeepLink}
 
             {/* Video Script Specs (TikTok / Instagram) */}
             {ad.scriptOutline && (
-              <div className="my-3 p-3 rounded-lg bg-pink-950/25 border border-pink-500/20 text-xs">
-                <div className="text-xs font-bold text-pink-300 flex items-center gap-1.5 mb-1.5">
-                  <Video className="w-3.5 h-3.5 text-pink-400" />
+              <div className="my-3.5 p-3.5 rounded-xl bg-[#060913] border border-slate-800 text-xs">
+                <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5 mb-2">
+                  <Video className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Viral Video Creator Blueprint:</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-300">
-                  <div className="bg-slate-900/60 p-2 rounded">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-slate-300">
+                  <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">
                       Hook Window:
                     </span>
-                    <span className="font-mono text-pink-300">{ad.scriptOutline.hookDuration}</span>
+                    <span className="font-mono text-emerald-400">{ad.scriptOutline.hookDuration}</span>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded">
+                  <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">
                       Suggested Sound:
                     </span>
                     <span className="text-amber-300">{ad.scriptOutline.soundSuggestion}</span>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded">
+                  <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">
                       Visual Screenplay:
                     </span>
@@ -707,19 +707,19 @@ ${affiliateDeepLink}
             )}
 
             {/* Ad Headline & Content */}
-            <div className="mt-3 space-y-2">
-              <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                <span>Headline / Hook:</span>
+            <div className="mt-3.5 space-y-2">
+              <div className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <span className="text-emerald-400">Headline / Hook:</span>
                 <span className="text-slate-200 font-normal">"{ad.headline}"</span>
               </div>
-              <pre className="text-xs font-sans text-slate-200 whitespace-pre-wrap bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 leading-relaxed max-h-56 overflow-y-auto">
+              <pre className="text-xs font-sans text-slate-200 whitespace-pre-wrap bg-[#060913] p-4 rounded-xl border border-slate-800 leading-relaxed max-h-56 overflow-y-auto">
                 {ad.bodyText}
               </pre>
             </div>
 
             {/* Hashtags Footer */}
-            <div className="mt-3 pt-3 border-t border-[#334155]/60 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
-              <span className="text-blue-400 font-mono text-[11px]">{ad.hashtags}</span>
+            <div className="mt-3.5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+              <span className="text-slate-400 font-mono text-[11px]">{ad.hashtags}</span>
               <span className="text-[11px] text-emerald-400 font-mono">
                 Target: {affiliateDeepLink}
               </span>
@@ -729,9 +729,9 @@ ${affiliateDeepLink}
       </div>
 
       {/* Automation & Webhook Integration Bar */}
-      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs shadow-xl">
         <div className="flex items-center gap-2.5 w-full sm:w-auto flex-1 max-w-xl">
-          <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+          <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
           <span className="font-bold text-slate-300 whitespace-nowrap">
             Auto-Schedule Webhook:
           </span>
@@ -743,7 +743,7 @@ ${affiliateDeepLink}
               setWebhookUrl(e.target.value);
               localStorage.setItem('cashcaptin_social_webhook', e.target.value);
             }}
-            className="bg-slate-900 border border-[#334155] rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-400 flex-1"
+            className="bg-[#060913] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 flex-1"
           />
         </div>
 

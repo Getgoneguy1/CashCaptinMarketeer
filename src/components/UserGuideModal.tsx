@@ -19,6 +19,8 @@ import {
   HelpCircle,
   Download
 } from 'lucide-react';
+import { CashCaptainLogo } from './CashCaptainLogo';
+import { getLiveAppOrigin } from '../services/masterAuthService';
 
 interface UserGuideModalProps {
   isOpen: boolean;
@@ -52,17 +54,15 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
     <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
       <div className="bg-[#1e293b] border border-[#334155] rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in fade-in duration-200">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#334155] bg-gradient-to-r from-amber-600/30 via-blue-600/25 to-slate-900 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-zinc-800 bg-black flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-black shadow-lg text-lg">
-              📖
-            </div>
+            <CashCaptainLogo className="w-12 h-12 shrink-0 drop-shadow-[0_2px_14px_rgba(57,255,20,0.35)]" />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black text-white tracking-tight">
-                  Cash Captain Marketeer™ Official User Guide & Operating Manual
+                  Cash Captain Marketeer™ Official User Guide
                 </h2>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   v1.0 Production
                 </span>
               </div>
@@ -427,13 +427,13 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                       <span>Privacy & Direct Deposit Guarantee:</span>
                     </div>
                     <p>
-                      - When buyers click any PayPal button, payments go directly into your verified PayPal account.
+                      - When buyers click any PayPal button, payments go directly into your verified business PayPal account.
                     </p>
                     <p>
-                      - Your personal email address is <strong>completely hidden</strong> from the public user interface to prevent spam.
+                      - Your email address is protected and encrypted to prevent unsolicited spam.
                     </p>
                     <p>
-                      - Instant sale notifications are sent to your alert inbox at <strong>tymesup4us@gmail.com</strong>.
+                      - Customer support and license inquiries are handled via <strong>yeahwegotthat@proton.me</strong>.
                     </p>
                   </div>
                 </div>
@@ -446,10 +446,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 <div className="border-b border-[#334155] pb-3">
                   <h3 className="text-base font-black text-orange-400 flex items-center gap-2">
                     <Flame className="w-5 h-5 text-orange-400" />
-                    Cloud Run & Firebase Free Hosting Architecture
+                    Cloud Run &amp; Hosting Architecture
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Where the app lives and how high-availability global hosting works.
+                    High-availability global hosting and reliable uptime.
                   </p>
                 </div>
                 <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-700 space-y-3 text-xs">
@@ -457,34 +457,24 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     <strong>Current Live Status:</strong>
                   </p>
                   <p>
-                    Your app is running live right now on Google Cloud Run with permanent worldwide SSL:
+                    Running live on Cloud Run with permanent worldwide SSL:
                     <br />
                     <a
-                      href="https://ais-pre-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app"
+                      href="https://ais-dev-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-amber-300 underline font-mono break-all inline-flex items-center gap-1 mt-1"
                     >
-                      <span>https://ais-pre-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app</span>
+                      <span>https://ais-dev-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app</span>
                       <ExternalLink className="w-3 h-3 shrink-0" />
                     </a>
                   </p>
                   <p>
-                    <strong>Firebase Firestore Database:</strong>
+                    <strong>Database Synchronization:</strong>
                   </p>
                   <p className="text-slate-300">
-                    Database ID: <code className="text-amber-300 font-mono">ai-studio-cashcaptinmarket-a8a9ed0f-bca8-4430-8928-7aed31466857</code>
-                    <br />
-                    Project: <code className="text-amber-300 font-mono">ywgt-director</code>
-                    <br />
-                    All user profiles, offers, clicks, and social ad logs are stored in Firestore with deployed zero-trust security rules.
+                    All user profiles, offers, clicks, and ad tracking are persisted with secure zero-trust rules.
                   </p>
-                  <p>
-                    <strong>Deploy to Firebase Hosting at any time:</strong>
-                  </p>
-                  <div className="bg-slate-950 p-2.5 rounded font-mono text-amber-300 text-[11px] border border-slate-800">
-                    npm run build && firebase deploy --only hosting
-                  </div>
                 </div>
               </div>
             )}
@@ -494,52 +484,27 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-[#334155] bg-slate-900/90 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => {
-                const subject = encodeURIComponent('Cash Captain Marketeer™ - Live Links & Complete Operating Manual');
-                const body = encodeURIComponent(
-                  `CASH CAPTAIN MARKETEER™ — OFFICIAL LINKS & BUILD SYNOPSIS\n\n` +
-                  `1. VERIFIED LIVE APPLICATION URL:\n` +
-                  `https://ais-dev-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app\n\n` +
-                  `2. COMPLETE PROJECT BACKUP (.ZIP):\n` +
-                  `https://ais-dev-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app/cashcaptain_marketeer_backup.zip\n\n` +
-                  `3. PAYPAL ACCOUNT:\n` +
-                  `tybirchfield42@gmail.com (Starter $47, Captain Pro $97, Lifetime $197)\n\n` +
-                  `4. FIREBASE CLOUD DATABASE:\n` +
-                  `ai-studio-cashcaptinmarket-a8a9ed0f-bca8-4430-8928-7aed31466857 (Project: ywgt-director)\n\n` +
-                  `5. SALES ALERTS RECIPIENT:\n` +
-                  `tymesup4us@gmail.com\n\n` +
-                  `Review your complete in-app manual under the "User Manual" tab on the live website anytime!`
-                );
-                window.location.href = `mailto:tybirchfield42@gmail.com?subject=${subject}&body=${body}`;
-              }}
-              className="px-3.5 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 font-bold text-xs border border-blue-500/40 cursor-pointer transition-all flex items-center gap-1.5"
-            >
-              <Mail className="w-3.5 h-3.5 text-blue-400" />
-              <span>Email to tybirchfield42@gmail.com</span>
-            </button>
             <a
-              href="/cashcaptain_marketeer_backup.zip"
-              download="cashcaptain_marketeer_backup.zip"
-              className="px-3.5 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 font-bold text-xs border border-cyan-500/40 cursor-pointer transition-all flex items-center gap-1.5"
+              href="mailto:yeahwegotthat@proton.me?subject=Cash%20Captain%20Marketeer%20Support"
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold text-xs border border-emerald-500/30 cursor-pointer transition-all flex items-center gap-1.5"
             >
-              <Download className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Download Backup (.ZIP)</span>
+              <Mail className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Contact Support (yeahwegotthat@proton.me)</span>
             </a>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
                 onClose();
-                onNavigateTab('sales');
+                onNavigateTab('autopilot');
               }}
-              className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer shadow-md transition-all"
+              className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition cursor-pointer shadow-md shadow-emerald-500/20"
             >
-              Go to PayPal Checkout
+              Start Using Auto-Pilot &rarr;
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs cursor-pointer border border-slate-700"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs cursor-pointer border border-slate-700 transition"
             >
               Close Manual
             </button>

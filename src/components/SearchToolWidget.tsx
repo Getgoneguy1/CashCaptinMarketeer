@@ -25,7 +25,6 @@ export const SearchToolWidget: React.FC<SearchToolWidgetProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) {
-      alert('Please enter a search term.');
       return;
     }
 
@@ -47,83 +46,83 @@ export const SearchToolWidget: React.FC<SearchToolWidgetProps> = ({
   };
 
   const widgetContent = (
-    <div className="bg-[#1e293b] rounded-xl p-6 sm:p-8 border border-[#334155] shadow-2xl max-w-lg w-full text-center relative">
+    <div className="bg-[#0c1222] rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-2xl max-w-lg w-full text-center relative space-y-4">
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#94a3b8] hover:text-white p-1 rounded-md text-lg cursor-pointer"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg text-lg cursor-pointer"
         >
           ✕
         </button>
       )}
 
-      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium border border-blue-500/20 mb-4">
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
         <Sparkles className="w-3.5 h-3.5" />
         <span>Micro Search Tool Utility</span>
       </div>
 
-      <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
+      <h2 className="text-2xl font-black text-white tracking-tight">
         {tool.tool_title}
       </h2>
 
-      <p className="text-xs text-[#94a3b8] mb-6">
+      <p className="text-xs text-slate-400">
         {tool.target_intent || 'Search query routes with active affiliate deep-link ID.'}
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         <div className="relative">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={tool.search_box_placeholder || 'Enter search query...'}
-            className="w-full px-4 py-3.5 bg-[#0f172a] border border-[#475569] rounded-lg text-white text-base focus:outline-none focus:border-[#3b82f6] shadow-inner transition-colors placeholder:text-[#64748b]"
+            className="w-full px-4 py-3.5 bg-[#060913] border border-slate-800 rounded-xl text-white text-base focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner transition-all placeholder:text-slate-600 font-medium"
             autoFocus={isModal}
           />
         </div>
 
         <button
           type="submit"
-          className="w-full py-3.5 px-6 bg-[#3b82f6] hover:bg-[#2563eb] active:scale-[0.99] text-white rounded-lg text-base font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-3.5 px-6 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-slate-950 rounded-xl text-base font-black shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <Search className="w-5 h-5" />
+          <Search className="w-5 h-5 text-slate-950" />
           <span>Search & Access</span>
         </button>
       </form>
 
-      <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#64748b]">
+      <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
         <ShieldCheck className="w-4 h-4 text-emerald-400" />
-        <span>Deep-link tag attached: <code className="text-sky-300 font-mono font-semibold">{offer.affiliate_id}</code></span>
+        <span>Deep-link tag attached: <code className="text-emerald-400 font-mono font-semibold">{offer.affiliate_id}</code></span>
       </div>
 
       {lastExecutedUrl && (
-        <div className="mt-6 pt-5 border-t border-[#334155] text-left">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-              <Check className="w-3.5 h-3.5" />
-              Search Executed & Click Recorded!
-            </span>
-            <button
-              onClick={handleCopyLink}
-              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"
-            >
-              {copied ? 'Copied URL!' : 'Copy Deep-Link'}
-            </button>
-          </div>
-
-          <div className="p-2.5 rounded bg-[#0f172a] border border-[#334155] text-xs font-mono text-[#38bdf8] break-all mb-3">
+        <div className="mt-6 pt-5 border-t border-slate-800 text-left space-y-2">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+            Generated Deep Link Output:
+          </span>
+          <div className="p-3 bg-[#060913] rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 break-all select-all">
             {lastExecutedUrl}
           </div>
 
-          <a
-            href={lastExecutedUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-2 px-3 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
-          >
-            <span>Open Destination URL in New Tab</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          <div className="flex items-center gap-2 pt-2">
+            <button
+              onClick={handleCopyLink}
+              className="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <ArrowRight className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied Link!' : 'Copy Deep Link'}</span>
+            </button>
+
+            <a
+              href={lastExecutedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2 px-4 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 rounded-xl text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Test Landing</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       )}
     </div>
@@ -131,7 +130,7 @@ export const SearchToolWidget: React.FC<SearchToolWidgetProps> = ({
 
   if (isModal) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         {widgetContent}
       </div>
     );

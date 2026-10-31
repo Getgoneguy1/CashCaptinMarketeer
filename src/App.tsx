@@ -15,6 +15,7 @@ import {
 } from './services/storage';
 import { generateMarketingStrategy } from './services/aiGenerator';
 import { Header, NavTab } from './components/Header';
+import { CashCaptainLogo } from './components/CashCaptainLogo';
 import { AutoPilotRadar } from './components/AutoPilotRadar';
 import { AccountingCard } from './components/AccountingCard';
 import { PipelineCard } from './components/PipelineCard';
@@ -34,8 +35,14 @@ import { SocialMediaCommandCenter } from './components/SocialMediaCommandCenter'
 import { FirebaseLiveGuideModal } from './components/FirebaseLiveGuideModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { UtilitiesPage } from './components/UtilitiesPage';
+import { MasterAccessModal } from './components/MasterAccessModal';
+import { MasterTopTierSuite } from './components/MasterTopTierSuite';
+import { CustomerAffiliateProgram } from './components/CustomerAffiliateProgram';
+import { UserLicenseModal } from './components/UserLicenseModal';
+import { getMasterSession, getMasterAppSettings, toggleMasterViewMode } from './services/masterAuthService';
+import { MasterAuthSession, MasterAppSettings } from './types';
 import { checkAndTriggerWeeklySchedule } from './services/emailReportService';
-import { PlusCircle, UploadCloud } from 'lucide-react';
+import { PlusCircle, UploadCloud, Lock, Crown, Eye, Sliders } from 'lucide-react';
 
 
 export const App: React.FC = () => {
@@ -102,11 +109,49 @@ export const App: React.FC = () => {
   const [showSocialBlastModal, setShowSocialBlastModal] = useState<boolean>(false);
   const [showFirebaseGuideModal, setShowFirebaseGuideModal] = useState<boolean>(false);
   const [showUserGuideModal, setShowUserGuideModal] = useState<boolean>(false);
+  const [showMasterModal, setShowMasterModal] = useState<boolean>(false);
+  const [showLicenseModal, setShowLicenseModal] = useState<boolean>(false);
+  const [masterSession, setMasterSession] = useState<MasterAuthSession>(() => getMasterSession());
+  const [appSettings, setAppSettings] = useState<MasterAppSettings>(() => getMasterAppSettings());
   const [activeModalTool, setActiveModalTool] = useState<{
     tool: MicroSearchTool;
     offer: Offer;
   } | null>(null);
   const [selectedHubOffer, setSelectedHubOffer] = useState<Offer | null>(null);
+
+  // Automatic redirect if user lands on dead unpublished ais-pre- snapshot URL
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.host.includes('ais-pre-')) {
+      window.location.replace(window.location.href.replace('ais-pre-', 'ais-dev-'));
+    }
+  }, []);
+
+  // Discrete Master Access Entry: check URL queries (?master=1, ?admin=1, #master) and hotkeys
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (search.includes('master') || search.includes('admin') || hash === '#master' || hash === '#admin') {
+        setShowMasterModal(true);
+      }
+
+      // Keyboard shortcut for owner: Alt + M or Ctrl + Shift + M
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.altKey && (e.key === 'm' || e.key === 'M')) || (e.ctrlKey && e.shiftKey && (e.key === 'm' || e.key === 'M'))) {
+          e.preventDefault();
+          setShowMasterModal((prev) => !prev);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, []);
+
+  const handleToggleMasterViewMode = () => {
+    const next = toggleMasterViewMode();
+    setMasterSession(next);
+  };
 
   // Initialize
   useEffect(() => {
@@ -338,7 +383,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-[#f8fafc] flex flex-col selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#050811] text-[#f8fafc] flex flex-col selection:bg-emerald-500 selection:text-slate-950">
       <Header
         activeTab={activeTab}
         setActiveTab={(tab) => {
@@ -355,9 +400,35 @@ export const App: React.FC = () => {
         onOpenFirebaseGuide={() => setShowFirebaseGuideModal(true)}
         onOpenUserGuide={() => setShowUserGuideModal(true)}
         affiliateProEnabled={affiliateProConfig.enabled}
+        masterSession={masterSession}
+        onOpenMasterAccess={() => setShowMasterModal(true)}
+        onToggleMasterViewMode={handleToggleMasterViewMode}
+        onOpenLicenseModal={() => setShowLicenseModal(true)}
       />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+        {/* TOP-TIER USABILITY SUITE (ONLY FOR MASTER OWNER IN ADMIN MODE) */}
+        {masterSession.isMasterLoggedIn && masterSession.viewMode === 'admin' && (
+          <div className="mb-6">
+            <MasterTopTierSuite
+              offers={offers}
+              tracking={tracking}
+              onUpdateOffers={(newOffers) => {
+                setOffers(newOffers);
+                saveOffers(newOffers);
+              }}
+              onUpdateTracking={(newTracking) => {
+                setTracking(newTracking);
+                saveTracking(newTracking);
+              }}
+              masterSession={masterSession}
+              onOpenMasterModal={() => setShowMasterModal(true)}
+              onSwitchToCustomerMode={handleToggleMasterViewMode}
+              onAppSettingsChange={(newSettings) => setAppSettings(newSettings)}
+            />
+          </div>
+        )}
+
         {/* TAB 0: AUTONOMOUS AI BUYER FINDER (DEFAULT) */}
         {activeTab === 'autopilot' && (
           <AutoPilotRadar
@@ -366,16 +437,18 @@ export const App: React.FC = () => {
             affiliateProConfig={affiliateProConfig}
             onRecordClick={handleRecordClick}
             onOpenEmailModal={() => setShowEmailModal(true)}
+            isMasterUser={masterSession.isMasterLoggedIn}
+            onOpenLicenseModal={() => setShowLicenseModal(true)}
           />
         )}
 
         {/* TAB 1: OFFERS */}
         {activeTab === 'offers' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#1e293b] p-4 rounded-lg border border-[#334155]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0c1222] p-5 rounded-2xl border border-slate-800 shadow-xl">
               <div>
                 <h2 className="text-base font-bold text-white">Your Affiliate Offers</h2>
-                <p className="text-xs text-[#94a3b8]">
+                <p className="text-xs text-slate-400">
                   Manage your products, generate instant promo copy, and launch micro-search tools.
                 </p>
               </div>
@@ -383,15 +456,15 @@ export const App: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowBulkModal(true)}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-bold transition-all shadow flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 cursor-pointer"
                 >
-                  <UploadCloud className="w-4 h-4" />
+                  <UploadCloud className="w-4 h-4 text-slate-950" />
                   <span>Bulk Add Offers</span>
                 </button>
 
                 <button
                   onClick={() => setShowSingleAddForm((prev) => !prev)}
-                  className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-[#334155] rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <PlusCircle className="w-4 h-4 text-emerald-400" />
                   <span>{showSingleAddForm ? 'Cancel' : 'Add Single Offer'}</span>
@@ -488,9 +561,14 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 6: COMMERCIAL SALES KIT & PAYPAL CHECKOUT */}
-        {activeTab === 'sales' && (
-          <CommercialSalesKit />
+        {/* TAB 6: CASH CAPTAIN AFFILIATE PARTNER PROGRAM (OPT-IN FOR CUSTOMERS) */}
+        {activeTab === 'partner' && (
+          <CustomerAffiliateProgram />
+        )}
+
+        {/* TAB 7: MASTER DEVELOPER COMMERCIAL SALES KIT (ONLY VISIBLE TO TY IN ADMIN MODE) */}
+        {activeTab === 'sales' && masterSession.isMasterLoggedIn && masterSession.viewMode === 'admin' && (
+          <CommercialSalesKit appSettings={appSettings} />
         )}
 
         {/* TAB 7 (VERY LAST PAGE): SYSTEM UTILITIES & BACKUP */}
@@ -546,11 +624,13 @@ export const App: React.FC = () => {
         selectedOffer={offers[0]}
       />
 
-      {/* Modal: Firebase Hosting and Cloud Command Center */}
-      <FirebaseLiveGuideModal
-        isOpen={showFirebaseGuideModal}
-        onClose={() => setShowFirebaseGuideModal(false)}
-      />
+      {/* Modal: Firebase Hosting and Cloud Command Center (Master Developer Only) */}
+      {masterSession.isMasterLoggedIn && (
+        <FirebaseLiveGuideModal
+          isOpen={showFirebaseGuideModal}
+          onClose={() => setShowFirebaseGuideModal(false)}
+        />
+      )}
 
       {/* Modal: Complete User Guide & Operating Manual */}
       <UserGuideModal
@@ -562,13 +642,63 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-[#334155]/60 bg-[#1e293b]/90 py-5 mt-12 text-xs text-[#94a3b8]">
+      {/* Modal: Master Access Login & Security Control */}
+      <MasterAccessModal
+        isOpen={showMasterModal}
+        onClose={() => setShowMasterModal(false)}
+        masterSession={masterSession}
+        onSessionChange={(newSession) => setMasterSession(newSession)}
+      />
+
+      {/* Modal: Customer License Status, Slot Quota & Upgrade */}
+      <UserLicenseModal
+        isOpen={showLicenseModal}
+        onClose={() => setShowLicenseModal(false)}
+        isMasterUser={masterSession.isMasterLoggedIn}
+        appSettings={appSettings}
+      />
+
+      {/* Floating Mode Switcher (Visible ONLY to Ty when viewing the app in Customer Mode) */}
+      {masterSession.isMasterLoggedIn && masterSession.viewMode === 'customer' && (
+        <aside aria-label="Master Controls" className="fixed bottom-4 right-4 z-50 bg-slate-900/95 border border-emerald-500/50 rounded-xl px-3.5 py-2 shadow-2xl backdrop-blur flex items-center gap-2.5 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-slate-200 font-bold">Ty Birchfield</span>
+            <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-mono">Customer Preview</span>
+          </div>
+          <button
+            onClick={handleToggleMasterViewMode}
+            className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-[11px] transition shadow shadow-emerald-500/20 cursor-pointer flex items-center gap-1"
+            title="Switch back to Master Admin Suite"
+          >
+            <Crown className="w-3 h-3 text-slate-950" />
+            <span>Switch to Admin</span>
+          </button>
+          <button
+            onClick={() => setShowMasterModal(true)}
+            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 cursor-pointer"
+            title="Open Master Settings"
+          >
+            <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+          </button>
+        </aside>
+      )}
+
+      {/* Footer (Clean, Silver & Neon Green with subtle discrete admin lock) */}
+      <footer className="border-t border-slate-700/80 bg-slate-900/90 py-5 mt-12 text-xs text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white tracking-wide">⚔️ Cash Captain Marketeer™</span>
+          <div className="flex items-center gap-2.5">
+            <CashCaptainLogo className="w-8 h-8 shrink-0 drop-shadow-[0_2px_8px_rgba(57,255,20,0.3)]" />
+            <div className="flex items-baseline tracking-tight">
+              <span className="font-black text-[#39ff14] text-sm drop-shadow-[0_0_6px_rgba(57,255,20,0.6)]">C</span>
+              <span className="font-bold text-slate-200 text-xs mr-1">ash</span>
+              <span className="font-black text-[#39ff14] text-sm drop-shadow-[0_0_6px_rgba(57,255,20,0.6)]">C</span>
+              <span className="font-bold text-slate-200 text-xs mr-1">aptain</span>
+              <span className="font-extrabold text-[#39ff14] text-xs italic">Marketeer!™</span>
+            </div>
             <span>&bull;</span>
             <span className="text-slate-300">Created by <strong className="text-white">Ty Birchfield</strong></span>
+            <span className="text-amber-300/80 text-[11px]">&bull; {appSettings.companyName}</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
             <span className="flex items-center gap-1.5 text-emerald-400">
@@ -577,6 +707,15 @@ export const App: React.FC = () => {
             </span>
             <span>&bull;</span>
             <span>All Rights Reserved</span>
+            {/* Subtle, discrete owner access button */}
+            <button
+              onClick={() => setShowMasterModal(true)}
+              className="text-slate-600 hover:text-emerald-400 transition-colors p-1 cursor-pointer"
+              title="Staff / Creator Entry"
+              aria-label="Staff Portal"
+            >
+              <Lock className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </footer>

@@ -58,10 +58,10 @@ export const OfferList: React.FC<OfferListProps> = ({
 
   if (offers.length === 0) {
     return (
-      <div className="bg-[#1e293b] rounded-lg p-8 border border-[#334155] shadow-lg text-center">
+      <div className="bg-[#0c1222] rounded-2xl p-8 border border-slate-800 shadow-xl text-center">
         <Tag className="w-10 h-10 text-slate-500 mx-auto mb-3" />
         <h3 className="text-lg font-bold text-white mb-1">No Offers Found</h3>
-        <p className="text-xs text-[#94a3b8] mb-4">
+        <p className="text-xs text-slate-400 mb-4">
           Add an affiliate offer above to generate promotional assets and search tools.
         </p>
       </div>
@@ -69,18 +69,18 @@ export const OfferList: React.FC<OfferListProps> = ({
   }
 
   return (
-    <div className="bg-[#1e293b] rounded-lg p-5 border border-[#334155] shadow-lg mb-6">
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#334155]">
+    <div className="bg-[#0c1222] rounded-2xl p-6 border border-slate-800 shadow-xl mb-6 space-y-4">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-sky-400" />
+            <Sparkles className="w-5 h-5 text-emerald-400" />
             Active Offers & AI Platform Assets
           </h2>
-          <p className="text-xs text-[#94a3b8]">
+          <p className="text-xs text-slate-400">
             Generated platform copywriting, compliance hooks, keywords, and micro search widgets
           </p>
         </div>
-        <span className="text-xs font-mono text-[#38bdf8] bg-[#0f172a] px-2.5 py-1 rounded border border-[#334155]">
+        <span className="text-xs font-mono text-emerald-400 bg-[#060913] px-3 py-1 rounded-xl border border-slate-800">
           {offers.length} active offer{offers.length > 1 ? 's' : ''}
         </span>
       </div>
@@ -104,16 +104,16 @@ export const OfferList: React.FC<OfferListProps> = ({
           return (
             <div
               key={offer.id}
-              className="bg-[#0f172a] border border-[#334155] rounded-lg overflow-hidden transition-all shadow-sm"
+              className="bg-[#060913] border border-slate-800 rounded-2xl overflow-hidden transition-all shadow-md hover:border-slate-700"
             >
               {/* Card Header Row */}
               <div
                 onClick={() => toggleExpand(offer.id)}
-                className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer hover:bg-slate-800/40 transition-colors"
+                className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer hover:bg-slate-900/60 transition-colors"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                   {offer.image_url && (
-                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-[#475569] bg-slate-900 shrink-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shrink-0">
                       <img
                         src={offer.image_url}
                         alt={offer.product_name}
@@ -123,33 +123,32 @@ export const OfferList: React.FC<OfferListProps> = ({
                   )}
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-base font-bold text-white hover:text-blue-400 transition-colors">
+                      <h3 className="text-base font-bold text-white hover:text-emerald-400 transition-colors">
                         {offer.product_name}
                       </h3>
                       <code className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">
                         Tag: {offer.affiliate_id}
                       </code>
                       {offer.category && (
-                        <span className="text-xs text-[#94a3b8] bg-[#1e293b] px-2 py-0.5 rounded border border-[#334155]">
+                        <span className="text-xs text-slate-300 bg-[#0c1222] px-2 py-0.5 rounded border border-slate-800">
                           {offer.category}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#94a3b8] line-clamp-1">
+                    <p className="text-xs text-slate-400 line-clamp-1">
                       {offer.product_description}
                     </p>
                   </div>
                 </div>
 
-
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 text-xs text-[#cbd5e1] font-mono bg-[#1e293b] px-3 py-1.5 rounded border border-[#334155]">
+                  <div className="flex items-center gap-3 text-xs text-slate-200 font-mono bg-[#0c1222] px-3.5 py-1.5 rounded-xl border border-slate-800">
                     <span><strong className="text-white">{offer.clicks || 0}</strong> clicks</span>
                     <span className="text-slate-600">|</span>
-                    <span><strong className="text-emerald-400">${(offer.revenue || 0).toFixed(2)}</strong></span>
+                    <span><strong className="text-amber-400">${(offer.revenue || 0).toFixed(2)}</strong></span>
                   </div>
 
-                  <div className="text-[#94a3b8] hover:text-white transition-colors">
+                  <div className="text-slate-400 hover:text-white transition-colors">
                     {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                   </div>
                 </div>
@@ -157,13 +156,13 @@ export const OfferList: React.FC<OfferListProps> = ({
 
               {/* Expanded Details */}
               {isExpanded && (
-                <div className="p-4 border-t border-[#334155] bg-[#1e293b]/40 space-y-4">
+                <div className="p-5 border-t border-slate-800 bg-[#0c1222]/80 space-y-4">
                   {/* Action Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#334155]/60 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800 text-xs">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => onViewOfferHub(offer)}
-                        className="px-3 py-1.5 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                        className="px-3.5 py-2 rounded-xl bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/40 font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         <span>View Dedicated Offer Hub</span>
@@ -176,7 +175,7 @@ export const OfferList: React.FC<OfferListProps> = ({
                             [offer.id]: !prev[offer.id]
                           }))
                         }
-                        className="px-3 py-1.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-[#334155] font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                        className="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700 font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
                         <Code className="w-3.5 h-3.5" />
                         <span>{isJson ? 'Rich View' : 'Raw JSON View'}</span>
@@ -187,15 +186,15 @@ export const OfferList: React.FC<OfferListProps> = ({
                       <button
                         onClick={() => handleRegenerate(offer)}
                         disabled={regeneratingId === offer.id}
-                        className="px-3 py-1.5 rounded bg-slate-800 text-sky-400 hover:bg-slate-700 border border-[#334155] font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                        className="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700 font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
-                        <Sparkles className={`w-3.5 h-3.5 ${regeneratingId === offer.id ? 'animate-spin' : ''}`} />
+                        <Sparkles className={`w-3.5 h-3.5 text-emerald-400 ${regeneratingId === offer.id ? 'animate-spin' : ''}`} />
                         <span>{regeneratingId === offer.id ? 'Regenerating...' : 'Regenerate AI Assets'}</span>
                       </button>
 
                       <button
                         onClick={() => onDeleteOffer(offer.id)}
-                        className="px-2.5 py-1.5 rounded text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border border-transparent font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-950/40 hover:border-rose-900/40 border border-transparent font-medium flex items-center gap-1 cursor-pointer transition-colors"
                         title="Delete this offer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -205,34 +204,34 @@ export const OfferList: React.FC<OfferListProps> = ({
 
                   {/* Micro Search Tools Section */}
                   <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Search className="w-3.5 h-3.5 text-sky-400" />
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                      <Search className="w-3.5 h-3.5 text-emerald-400" />
                       Generated Micro Search Tools ({platformCopyData?.micro_search_tools?.length || 0})
                     </h4>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {(platformCopyData?.micro_search_tools || []).map((tool, idx) => (
                         <div
                           key={idx}
-                          className="bg-[#0f172a] p-3 rounded border border-[#334155] flex flex-col justify-between hover:border-blue-500/50 transition-colors"
+                          className="bg-[#060913] p-4 rounded-xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-colors shadow-sm"
                         >
                           <div>
                             <div className="flex items-center justify-between gap-1 mb-1">
                               <span className="text-xs font-bold text-white truncate">
                                 {tool.tool_title}
                               </span>
-                              <span className="text-[10px] text-sky-400 font-mono bg-sky-950/60 px-1.5 py-0.2 rounded">
+                              <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
                                 Tool #{idx + 1}
                               </span>
                             </div>
-                            <p className="text-[11px] text-[#94a3b8] line-clamp-2 mb-2">
+                            <p className="text-[11px] text-slate-400 line-clamp-2 mb-2">
                               {tool.target_intent}
                             </p>
                           </div>
 
                           <button
                             onClick={() => onTestSearchTool(tool, offer)}
-                            className="w-full mt-2 py-1.5 px-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded text-xs font-semibold border border-blue-500/30 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="w-full mt-2 py-2 px-3 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 rounded-xl text-xs font-bold border border-emerald-500/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                           >
                             <Search className="w-3 h-3" />
                             <span>Launch Live Search Box</span>
@@ -246,18 +245,18 @@ export const OfferList: React.FC<OfferListProps> = ({
                   {isJson ? (
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-semibold text-[#94a3b8]">
+                        <span className="text-xs font-semibold text-slate-400">
                           platform_copy.json
                         </span>
                         <button
                           onClick={() => handleCopy(JSON.stringify(platformCopyData, null, 2), `json-${offer.id}`)}
-                          className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"
+                          className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer font-semibold"
                         >
                           {copiedKey === `json-${offer.id}` ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{copiedKey === `json-${offer.id}` ? 'Copied JSON!' : 'Copy Raw JSON'}</span>
                         </button>
                       </div>
-                      <pre className="bg-[#0f172a] p-3 rounded-md border border-[#334155] text-xs text-[#38bdf8] overflow-x-auto max-h-64 font-mono leading-relaxed">
+                      <pre className="bg-[#060913] p-4 rounded-xl border border-slate-800 text-xs text-emerald-400 overflow-x-auto max-h-64 font-mono leading-relaxed">
                         {JSON.stringify(platformCopyData, null, 2)}
                       </pre>
                     </div>
@@ -265,12 +264,12 @@ export const OfferList: React.FC<OfferListProps> = ({
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <FileText className="w-3.5 h-3.5 text-purple-400" />
+                          <FileText className="w-3.5 h-3.5 text-emerald-400" />
                           Multi-Platform Copy & Strategy
                         </h4>
 
                         {/* Platform Selector Tabs */}
-                        <div className="flex items-center gap-1 bg-[#0f172a] p-1 rounded border border-[#334155]">
+                        <div className="flex items-center gap-1 bg-[#060913] p-1 rounded-xl border border-slate-800">
                           {platforms.map((platform) => (
                             <button
                               key={platform}
@@ -280,10 +279,10 @@ export const OfferList: React.FC<OfferListProps> = ({
                                   [offer.id]: platform
                                 }))
                               }
-                              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                                 selectedPlatform === platform
-                                  ? 'bg-[#3b82f6] text-white'
-                                  : 'text-[#94a3b8] hover:text-white'
+                                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                                  : 'text-slate-400 hover:text-white'
                               }`}
                             >
                               {platform}
@@ -292,14 +291,14 @@ export const OfferList: React.FC<OfferListProps> = ({
                         </div>
                       </div>
 
-                      <div className="bg-[#0f172a] p-3.5 rounded border border-[#334155] space-y-3">
-                        <div className="flex items-center justify-between border-b border-[#334155]/60 pb-2">
+                      <div className="bg-[#060913] p-4 rounded-xl border border-slate-800 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                           <span className="text-xs font-semibold text-emerald-400">
                             {selectedPlatform} Compliance-Safe Promotional Content
                           </span>
                           <button
                             onClick={() => handleCopy(copyText, `${offer.id}-${selectedPlatform}`)}
-                            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-white border border-[#334155] flex items-center gap-1.5 cursor-pointer transition-colors"
+                            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-white border border-slate-700 flex items-center gap-1.5 cursor-pointer transition-colors font-semibold"
                           >
                             {copiedKey === `${offer.id}-${selectedPlatform}` ? (
                               <>
@@ -316,26 +315,26 @@ export const OfferList: React.FC<OfferListProps> = ({
                         </div>
 
                         {copyHook && (
-                          <div className="text-xs bg-purple-950/40 border border-purple-800/40 p-2.5 rounded text-purple-200">
-                            <strong className="text-purple-300 block mb-0.5">Hook:</strong>
+                          <div className="text-xs bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-slate-200">
+                            <strong className="text-emerald-400 block mb-0.5">Hook:</strong>
                             {copyHook}
                           </div>
                         )}
 
-                        <div className="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed font-sans bg-slate-900/50 p-3 rounded border border-slate-800">
+                        <div className="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed font-sans bg-[#0c1222] p-3.5 rounded-xl border border-slate-800">
                           {copyText}
                         </div>
 
                         {copyVisual && (
-                          <div className="text-xs bg-amber-950/30 border border-amber-800/30 p-2.5 rounded text-amber-200">
-                            <strong className="text-amber-300 block mb-0.5">Visual Concept:</strong>
+                          <div className="text-xs bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-slate-200">
+                            <strong className="text-amber-400 block mb-0.5">Visual Concept:</strong>
                             {copyVisual}
                           </div>
                         )}
 
                         {copyStrategy && (
-                          <div className="text-xs text-[#94a3b8] pt-1">
-                            <strong className="text-[#cbd5e1]">Strategic Distribution:</strong> {copyStrategy}
+                          <div className="text-xs text-slate-400 pt-1">
+                            <strong className="text-slate-200">Strategic Distribution:</strong> {copyStrategy}
                           </div>
                         )}
                       </div>
@@ -344,8 +343,8 @@ export const OfferList: React.FC<OfferListProps> = ({
 
                   {/* Keywords & Questions footer */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                    <div className="bg-[#0f172a] p-3 rounded border border-[#334155]">
-                      <span className="text-xs font-bold text-[#cbd5e1] flex items-center gap-1 mb-2">
+                    <div className="bg-[#060913] p-3.5 rounded-xl border border-slate-800">
+                      <span className="text-xs font-bold text-slate-200 flex items-center gap-1 mb-2">
                         <KeyRound className="w-3.5 h-3.5 text-amber-400" />
                         High-Intent Buyer Keywords
                       </span>
@@ -353,7 +352,7 @@ export const OfferList: React.FC<OfferListProps> = ({
                         {(platformCopyData?.keywords || offer.keywords || []).map((kw, i) => (
                           <span
                             key={i}
-                            className="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700"
+                            className="text-[11px] px-2 py-0.5 rounded-lg bg-[#0c1222] text-slate-300 border border-slate-800"
                           >
                             {kw}
                           </span>
@@ -361,12 +360,12 @@ export const OfferList: React.FC<OfferListProps> = ({
                       </div>
                     </div>
 
-                    <div className="bg-[#0f172a] p-3 rounded border border-[#334155]">
-                      <span className="text-xs font-bold text-[#cbd5e1] flex items-center gap-1 mb-2">
-                        <HelpCircle className="w-3.5 h-3.5 text-blue-400" />
+                    <div className="bg-[#060913] p-3.5 rounded-xl border border-slate-800">
+                      <span className="text-xs font-bold text-slate-200 flex items-center gap-1 mb-2">
+                        <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
                         Pain-Point Buyer Questions
                       </span>
-                      <ul className="text-xs text-[#94a3b8] space-y-1 list-disc list-inside">
+                      <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         {(platformCopyData?.questions || []).slice(0, 3).map((q, i) => (
                           <li key={i} className="truncate">
                             {q}

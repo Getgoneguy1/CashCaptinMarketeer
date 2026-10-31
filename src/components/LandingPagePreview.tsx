@@ -19,6 +19,8 @@ import {
   Target
 } from 'lucide-react';
 import { sendPurchaseAlertToOwner, OWNER_NOTIFICATION_EMAIL } from '../services/emailReportService';
+import { getLiveAppOrigin } from '../services/masterAuthService';
+import { CashCaptainLogo } from './CashCaptainLogo';
 
 interface LandingPagePreviewProps {
   onEnterApp?: () => void;
@@ -39,13 +41,14 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
     return null;
   });
 
-  // Direct PayPal Checkout URLs for Y.W.G.T Online! / Virbis.com LLC
+  const paypalRecipient = 'yeahwegotthat@proton.me';
+
   const PAYPAL_STARTER_URL =
-    'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tybirchfield42@gmail.com&item_name=Cash+Captain+Marketeer+Starter+License&amount=47.00&currency_code=USD';
+    `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalRecipient)}&item_name=Cash+Captain+Marketeer+Starter+License&amount=47.00&currency_code=USD${partnerReferral ? `&custom=${encodeURIComponent(partnerReferral)}` : ''}`;
   const PAYPAL_PRO_URL =
-    'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tybirchfield42@gmail.com&item_name=Cash+Captain+Marketeer+Captain+Pro+License&amount=97.00&currency_code=USD';
+    `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalRecipient)}&item_name=Cash+Captain+Marketeer+Captain+Pro+License&amount=97.00&currency_code=USD${partnerReferral ? `&custom=${encodeURIComponent(partnerReferral)}` : ''}`;
   const PAYPAL_LIFETIME_URL =
-    'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tybirchfield42@gmail.com&item_name=Cash+Captain+Marketeer+Founder+Lifetime+License&amount=197.00&currency_code=USD';
+    `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalRecipient)}&item_name=Cash+Captain+Marketeer+Founder+Lifetime+License&amount=197.00&currency_code=USD${partnerReferral ? `&custom=${encodeURIComponent(partnerReferral)}` : ''}`;
 
   // Stripe Checkout URLs
   const STRIPE_STARTER_URL = 'https://buy.stripe.com/ty_cashcaptain_starter_47';
@@ -58,20 +61,23 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
     setAffiliateRegistered(true);
   };
 
+  const liveBaseUrl = getLiveAppOrigin();
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#050811] text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950">
       {/* Top Announcement Bar */}
-      <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-blue-600 text-slate-950 px-4 py-2 text-center text-xs font-black tracking-wider uppercase flex items-center justify-center gap-2 flex-wrap">
-        <span>⚔️ Cash Captain: All in One, Cash for All!</span>
+      <div className="bg-[#0c1222] border-b border-slate-800 text-slate-200 px-4 py-2 text-center text-xs font-bold tracking-wider flex items-center justify-center gap-2 flex-wrap">
+        <span className="text-emerald-400 font-black">⚔️ CASH CAPTAIN:</span>
+        <span className="text-slate-300">All in One, Cash for All!</span>
         {partnerReferral && (
-          <span className="px-2 py-0.5 rounded-full bg-slate-950/90 text-emerald-300 text-[10px] font-mono border border-emerald-400/50 shadow">
+          <span className="px-2 py-0.5 rounded-full bg-[#060913] text-emerald-300 text-[10px] font-mono border border-emerald-400/40 shadow">
             Affiliate Partner Ref #{partnerReferral}
           </span>
         )}
         {onEnterApp && (
           <button
             onClick={onEnterApp}
-            className="ml-3 px-3 py-0.5 rounded bg-slate-950 text-amber-300 text-[11px] font-bold hover:bg-slate-900 transition cursor-pointer"
+            className="ml-3 px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold transition cursor-pointer"
           >
             Open App Dashboard &rarr;
           </button>
@@ -79,18 +85,28 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
       </div>
 
       {/* Header */}
-      <header className="border-b border-[#334155]/80 bg-[#1e293b]/90 backdrop-blur sticky top-0 z-50">
+      <header className="border-b border-slate-800 bg-[#0c1222]/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
-              ⚔️
-            </div>
-            <div>
-              <h1 className="text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-2">
-                <span>Cash Captain Marketeer™</span>
-              </h1>
-              <p className="text-[11px] text-amber-300 font-semibold">
-                Y.W.G.T Online! • A Virbis.com Company
+          <div className="flex items-center gap-4 sm:gap-5">
+            <CashCaptainLogo className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 drop-shadow-[0_4px_24px_rgba(57,255,20,0.35)]" />
+            <div className="flex flex-col justify-center">
+              <div className="flex items-baseline tracking-tight select-none">
+                <span className="text-2xl sm:text-3xl font-black text-[#39ff14] drop-shadow-[0_0_10px_rgba(57,255,20,0.6)] leading-none">C</span>
+                <span className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-300 mr-2 leading-none">ash</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#39ff14] drop-shadow-[0_0_10px_rgba(57,255,20,0.6)] leading-none">C</span>
+                <span className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-300 leading-none">aptain</span>
+              </div>
+              <div className="pl-4 sm:pl-6 mt-0.5 flex flex-col items-start">
+                <span className="text-base sm:text-lg font-black tracking-wide text-[#39ff14] drop-shadow-[0_0_10px_rgba(57,255,20,0.5)] italic">
+                  Marketeer!™
+                </span>
+                <svg className="w-28 sm:w-32 h-2 text-[#39ff14] -mt-0.5 overflow-visible" viewBox="0 0 140 10" fill="none">
+                  <path d="M 2,3 C 35,8 90,9 135,2 C 120,4 90,7 45,5" fill="#39ff14" className="drop-shadow-[0_0_4px_rgba(57,255,20,0.8)]" />
+                </svg>
+              </div>
+              <p className="text-[11px] text-slate-300 font-medium pl-4 sm:pl-6 mt-1 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#39ff14] shadow-[0_0_5px_#39ff14]"></span>
+                <span>Y.W.G.T Online! • A Virbis.com Company</span>
               </p>
             </div>
           </div>
@@ -98,7 +114,7 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
           <div className="flex items-center gap-3">
             <a
               href="#pricing"
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs transition shadow-md shadow-amber-500/20 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition shadow-md shadow-emerald-500/20 cursor-pointer"
             >
               Get License
             </a>
@@ -109,6 +125,10 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 sm:py-24 px-4 bg-gradient-to-b from-[#1e293b]/60 via-slate-950 to-slate-950 text-center">
         <div className="max-w-4xl mx-auto space-y-6 relative z-10">
+          <div className="flex justify-center mb-1">
+            <CashCaptainLogo className="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-[0_8px_30px_rgba(226,232,240,0.35)]" />
+          </div>
+
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-300 text-xs font-bold border border-amber-500/30">
             <span>🔥 Autonomous AI Buyer Radar &bull; Zero-Ban Compliance Engine</span>
           </div>
@@ -474,19 +494,39 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
                 </div>
               </form>
             ) : (
-              <div className="bg-[#1e293b] p-5 rounded-xl border border-emerald-500/50 space-y-3 text-center">
+              <div className="bg-[#0c1222] p-5 rounded-2xl border border-emerald-500/40 space-y-3 text-center">
                 <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
                   <CheckCircle2 className="w-5 h-5" />
                   <span>Affiliate Partnership Active for {affiliateName}!</span>
                 </div>
                 <p className="text-xs text-slate-300">
-                  Assigned Partner ID: <strong className="text-amber-400">Ref #{assignedPartnerId}</strong> &bull; Tier: <strong className="text-amber-300">{affiliateRewardChoice === 'cash_40' ? '40% Lifetime Cash' : '25% Cash + Free License'}</strong>
+                  Assigned Partner ID: <strong className="text-emerald-400">Ref #{assignedPartnerId}</strong> &bull; Tier: <strong className="text-amber-300">{affiliateRewardChoice === 'cash_40' ? '40% Lifetime Cash' : '25% Cash + Free License'}</strong>
                 </p>
-                <div className="bg-[#0f172a] p-3 rounded-lg border border-[#475569] font-mono text-xs text-sky-400 select-all">
-                  https://ccm.app/ref{assignedPartnerId}
+                <div className="flex items-center justify-center gap-2 max-w-lg mx-auto">
+                  <div className="bg-[#060913] px-3.5 py-2 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 select-all flex-1 truncate">
+                    {`${liveBaseUrl}/?ref=${assignedPartnerId}`}
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${liveBaseUrl}/?ref=${assignedPartnerId}`);
+                    }}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Copy</span>
+                  </button>
+                  <a
+                    href={`${liveBaseUrl}/?ref=${assignedPartnerId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition"
+                    title="Open Link"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Share this short numbered link anywhere! All sales route commission to your PayPal ({affiliatePayPal}) and the balance to Y.W.G.T Online! / Virbis.com LLC.
+                  Share this link anywhere! All sales route commission to your PayPal ({affiliatePayPal}) and the balance to Y.W.G.T Online! / Virbis.com LLC.
                 </p>
               </div>
             )}
@@ -497,8 +537,15 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ onEnterA
       {/* Footer */}
       <footer className="border-t border-[#334155] bg-slate-950 py-8 text-xs text-[#94a3b8] text-center space-y-2">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white tracking-wide">⚔️ Cash Captain Marketeer™</span>
+          <div className="flex items-center gap-2.5">
+            <CashCaptainLogo className="w-8 h-8 shrink-0 drop-shadow-[0_2px_8px_rgba(57,255,20,0.3)]" />
+            <div className="flex items-baseline tracking-tight">
+              <span className="font-black text-[#39ff14] text-sm drop-shadow-[0_0_6px_rgba(57,255,20,0.6)]">C</span>
+              <span className="font-bold text-slate-200 text-xs mr-1">ash</span>
+              <span className="font-black text-[#39ff14] text-sm drop-shadow-[0_0_6px_rgba(57,255,20,0.6)]">C</span>
+              <span className="font-bold text-slate-200 text-xs mr-1">aptain</span>
+              <span className="font-extrabold text-[#39ff14] text-xs italic">Marketeer!™</span>
+            </div>
             <span>&bull;</span>
             <span className="text-slate-300">Y.W.G.T Online! • A Virbis.com Company</span>
           </div>

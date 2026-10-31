@@ -142,6 +142,7 @@ export interface BuildLogEntry {
   timestamp: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
+  status?: string;
 }
 
 export interface AffiliateProConfig {
@@ -150,4 +151,43 @@ export interface AffiliateProConfig {
   webhookUrl: string;
   syncMode: 'redirect' | 'webhook' | 'embed';
   lastSynced?: string;
+  // Multi-App Virbis Ecosystem Expansion (All 3 apps hosted together for free)
+  app3Name?: string;
+  app3Url?: string;
+  app3Description?: string;
+  ecosystemDomain?: string;
 }
+
+export interface MasterAuthSession {
+  isMasterLoggedIn: boolean;
+  userEmail: string;
+  userName: string;
+  role: 'master_creator' | 'license_holder' | 'guest';
+  viewMode: 'admin' | 'customer';
+  loginTimestamp?: string;
+  masterKey?: string;
+  licensedBuyerId?: string;
+}
+
+export interface MasterAppSettings {
+  appName: string;
+  brandTagline: string;
+  companyName: string;
+  supportEmail: string;
+  paypalEmail: string;
+  liveDomain: string;
+  announcementBarText?: string;
+  showAnnouncementBar?: boolean;
+}
+
+export interface GeneratedLicenseKey {
+  id: string;
+  key: string;
+  customerName: string;
+  customerEmail: string;
+  createdAt: string;
+  plan: 'Single Station' | 'Commercial Agency' | 'Lifetime Master';
+  status: 'Active' | 'Revoked';
+  activationsCount: number;
+}
+

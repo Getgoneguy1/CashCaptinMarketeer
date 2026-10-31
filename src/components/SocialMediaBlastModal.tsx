@@ -16,6 +16,7 @@ import {
   Layers,
   Globe
 } from 'lucide-react';
+import { CashCaptainLogo } from './CashCaptainLogo';
 
 interface SocialMediaBlastModalProps {
   isOpen: boolean;
@@ -346,11 +347,9 @@ ${affiliateDeepLink}
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       <div className="bg-[#1e293b] border border-[#334155] rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-[#334155] bg-gradient-to-r from-blue-900/40 via-purple-900/30 to-amber-900/30 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-zinc-800 bg-black flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500 flex items-center justify-center text-white shadow-lg text-lg">
-              📢
-            </div>
+            <CashCaptainLogo className="w-12 h-12 shrink-0 drop-shadow-[0_2px_14px_rgba(57,255,20,0.35)]" />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black text-white tracking-tight">

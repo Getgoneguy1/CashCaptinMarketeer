@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import firebaseConfig from '../../firebase-applet-config.json';
+import { CashCaptainLogo } from './CashCaptainLogo';
 
 interface FirebaseLiveGuideModalProps {
   isOpen: boolean;
@@ -39,11 +40,9 @@ export const FirebaseLiveGuideModal: React.FC<FirebaseLiveGuideModalProps> = ({
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       <div className="bg-[#1e293b] border border-[#334155] rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#334155] bg-gradient-to-r from-amber-600/30 via-orange-600/25 to-blue-600/30 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-zinc-800 bg-black flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-slate-950 font-black shadow-lg text-lg">
-              🔥
-            </div>
+            <CashCaptainLogo className="w-12 h-12 shrink-0 drop-shadow-[0_2px_14px_rgba(57,255,20,0.35)]" />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black text-white tracking-tight">
@@ -107,7 +106,7 @@ export const FirebaseLiveGuideModal: React.FC<FirebaseLiveGuideModalProps> = ({
               <span>💡 What Firebase is Doing For Your App:</span>
             </div>
             <p>
-              1. <strong>Free Hosting:</strong> Firebase serves your frontend web app at your dedicated URL (e.g. <span className="text-amber-300 font-mono">https://{firebaseConfig.projectId}.web.app</span>) with free global SSL and custom domains.
+              1. <strong>Free Hosting:</strong> Firebase serves your frontend web app at your dedicated Cash Captain URL (<span className="text-amber-300 font-mono font-bold">https://cash-captain.web.app</span>) with free global SSL, zero downtime, and custom domains.
             </p>
             <p>
               2. <strong>Real-Time Cloud Persistence:</strong> Every offer you create, every traffic click tracked, and all social ads syndicated are automatically saved to your provisioned cloud database.

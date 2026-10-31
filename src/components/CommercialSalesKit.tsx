@@ -15,12 +15,20 @@ import {
   Send,
   Share2,
   Eye,
-  Copy
+  Copy,
+  Download
 } from 'lucide-react';
 import { sendPurchaseAlertToOwner, OWNER_NOTIFICATION_EMAIL } from '../services/emailReportService';
+import { getLiveAppOrigin } from '../services/masterAuthService';
+import { MasterAppSettings } from '../types';
 import { LandingPagePreview } from './LandingPagePreview';
+import { CashCaptainLogo } from './CashCaptainLogo';
 
-export const CommercialSalesKit: React.FC = () => {
+interface CommercialSalesKitProps {
+  appSettings?: MasterAppSettings;
+}
+
+export const CommercialSalesKit: React.FC<CommercialSalesKitProps> = ({ appSettings }) => {
   const [showFullLandingPage, setShowFullLandingPage] = useState(false);
   const [copiedAdUrl, setCopiedAdUrl] = useState(false);
   const [copiedShortUrl, setCopiedShortUrl] = useState(false);
@@ -31,13 +39,20 @@ export const CommercialSalesKit: React.FC = () => {
   const [affiliateRegistered, setAffiliateRegistered] = useState(false);
   const [assignedPartnerId] = useState<number>(() => Math.floor(101 + Math.random() * 899));
 
+  // Use configured liveDomain from settings or active live origin
+  const liveBaseUrl = appSettings?.liveDomain || getLiveAppOrigin();
+  const landingPageUrl = `${liveBaseUrl}/?page=landing`;
+  const appUrl = liveBaseUrl;
+
+  const paypalRecipient = appSettings?.paypalEmail || 'yeahwegotthat@proton.me';
+
   // Direct PayPal Checkout URLs for Y.W.G.T Online! / Virbis.com LLC
   const PAYPAL_STARTER_URL =
-    'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tybirchfield42@gmail.com&item_name=Cash+Captain+Marketeer+Starter+License&amount=47.00&currency_code=USD';
+    `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalRecipient)}&item_name=Cash+Captain+Marketeer+Starter+License&amount=47.00&currency_code=USD`;
   const PAYPAL_PRO_URL =
-    'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tybirchfield42@gmail.com&item_name=Cash+Captain+Marketeer+Captain+Pro+License&amount=97.00&currency_code=USD';
+    `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalRecipient)}&item_name=Cash+Captain+Marketeer+Captain+Pro+License&amount=97.00&currency_code=USD`;
   const PAYPAL_LIFETIME_URL =
-    'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tybirchfield42@gmail.com&item_name=Cash+Captain+Marketeer+Founder+Lifetime+License&amount=197.00&currency_code=USD';
+    `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalRecipient)}&item_name=Cash+Captain+Marketeer+Founder+Lifetime+License&amount=197.00&currency_code=USD`;
 
   // Stripe Checkout URLs (Y.W.G.T Online! / Virbis.com LLC Stripe Business Checkout)
   const STRIPE_STARTER_URL = 'https://buy.stripe.com/ty_cashcaptain_starter_47';
@@ -57,37 +72,48 @@ export const CommercialSalesKit: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-6">
       {/* Header & Branding */}
-      <div className="bg-gradient-to-r from-amber-950/70 via-[#1e293b] to-blue-950/70 p-6 sm:p-8 rounded-2xl border border-amber-500/40 shadow-2xl text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 font-black shadow-xl shadow-amber-500/25 text-2xl mb-1">
-          ⚔️
+      <div className="bg-[#0c1222] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl text-center space-y-4">
+        <div className="inline-flex items-center justify-center mb-2">
+          <CashCaptainLogo className="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-[0_6px_28px_rgba(57,255,20,0.35)]" />
         </div>
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-            Cash Captain Marketeer™ License
-          </h1>
-          <p className="text-xs sm:text-sm text-amber-300 font-semibold mt-1">
-            Y.W.G.T Online! • A Virbis.com Company (Founded by Ty Birchfield) &bull; "Cash Captain: All in One, Cash for All!"
+        <div className="flex flex-col items-center">
+          <div className="flex items-baseline tracking-tight select-none">
+            <span className="text-4xl sm:text-6xl font-black text-[#39ff14] drop-shadow-[0_0_14px_rgba(57,255,20,0.7)] leading-none">C</span>
+            <span className="text-3xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 mr-2 sm:mr-3 leading-none">ash</span>
+            <span className="text-4xl sm:text-6xl font-black text-[#39ff14] drop-shadow-[0_0_14px_rgba(57,255,20,0.7)] leading-none">C</span>
+            <span className="text-3xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 leading-none">aptain</span>
+          </div>
+          <div className="pl-6 sm:pl-10 mt-1 flex flex-col items-center">
+            <span className="text-2xl sm:text-4xl font-black tracking-wide text-[#39ff14] drop-shadow-[0_0_12px_rgba(57,255,20,0.6)] italic">
+              Marketeer!™
+            </span>
+            <svg className="w-40 sm:w-52 h-2.5 text-[#39ff14] mt-0.5 overflow-visible" viewBox="0 0 160 12" fill="none">
+              <path d="M 2,4 C 40,10 110,11 155,2 C 140,5 110,9 55,7" fill="#39ff14" className="drop-shadow-[0_0_5px_rgba(57,255,20,0.9)]" />
+            </svg>
+          </div>
+          <p className="text-xs sm:text-sm text-[#39ff14] font-semibold mt-2.5">
+            Y.W.G.T Online! • A Virbis.com Company (Founded by Ty Birchfield) &bull; <span className="text-amber-300">"All for Cash, and Cash for All!"</span>
           </p>
         </div>
-        <p className="text-xs sm:text-sm text-[#94a3b8] max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
           Unlock the ultimate autonomous AI buyer radar, zero-ban compliance engine, and hands-free affiliate traffic placement platform. Choose your license below for instant access.
         </p>
       </div>
 
       {/* Quick Master Link Box for Company Use & Ad Campaigns */}
-      <div className="bg-[#1e293b] p-5 rounded-xl border border-amber-500/40 space-y-4 shadow-xl">
+      <div className="bg-[#0c1222] p-5 sm:p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <span className="text-xs font-black text-amber-400 uppercase tracking-wider block">
+            <span className="text-xs font-black text-emerald-400 uppercase tracking-wider block">
               🎯 Dedicated Ad Campaign Landing Page (For Ads & Traffic Blasts)
             </span>
             <p className="text-xs text-slate-300 mt-0.5">
-              Send potential buyers directly to our high-converting standalone sales landing page:
+              Send potential buyers directly to your verified active live sales landing page:
             </p>
           </div>
           <button
             onClick={() => setShowFullLandingPage(true)}
-            className="px-3.5 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0 shadow"
+            className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0 shadow shadow-emerald-500/20"
             title="Open Standalone External Sales Landing Page"
           >
             <Eye className="w-3.5 h-3.5" />
@@ -97,7 +123,7 @@ export const CommercialSalesKit: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
           {/* Direct Live Ad URL */}
-          <div className="bg-[#0f172a] p-3 rounded-lg border border-[#334155] space-y-1.5">
+          <div className="bg-[#060913] p-3.5 rounded-xl border border-slate-800 space-y-1.5">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
               Direct Live Ad URL (For Facebook / Google / TikTok / Solo Ads):
             </span>
@@ -105,48 +131,81 @@ export const CommercialSalesKit: React.FC = () => {
               <input
                 type="text"
                 readOnly
-                value="https://ais-pre-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app/?page=landing"
-                className="w-full bg-[#1e293b] px-2.5 py-1.5 rounded text-xs text-amber-300 font-mono border border-slate-700 select-all"
+                value={landingPageUrl}
+                className="w-full bg-slate-950 px-3 py-1.5 rounded-lg text-xs text-emerald-400 font-mono border border-slate-800 select-all"
               />
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText('https://ais-pre-qys7kmq2tbrzxgktb5qd4i-21093015917.us-east1.run.app/?page=landing');
+                  navigator.clipboard.writeText(landingPageUrl);
                   setCopiedAdUrl(true);
                   setTimeout(() => setCopiedAdUrl(false), 2000);
                 }}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold shrink-0 transition flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold shrink-0 transition flex items-center gap-1 cursor-pointer"
               >
-                {copiedAdUrl ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedAdUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedAdUrl ? 'Copied!' : 'Copy'}</span>
               </button>
+              <a
+                href={landingPageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold shrink-0 transition"
+                title="Open Live Link to Verify"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
 
           {/* Master Short URL */}
-          <div className="bg-[#0f172a] p-3 rounded-lg border border-[#334155] space-y-1.5">
+          <div className="bg-[#060913] p-3.5 rounded-xl border border-slate-800 space-y-1.5">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-              Master Branded Short Link (For bios, posts, and flyers):
+              Official Master Branded Link (For bios, posts, and ads):
             </span>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 readOnly
-                value="https://ccm.app/go"
-                className="w-full bg-[#1e293b] px-2.5 py-1.5 rounded text-xs text-emerald-300 font-mono border border-slate-700 select-all"
+                value={appUrl}
+                className="w-full bg-slate-950 px-3 py-1.5 rounded-lg text-xs text-emerald-400 font-mono border border-slate-800 select-all"
               />
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText('https://ccm.app/go');
+                  navigator.clipboard.writeText(appUrl);
                   setCopiedShortUrl(true);
                   setTimeout(() => setCopiedShortUrl(false), 2000);
                 }}
-                className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold shrink-0 transition flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold shrink-0 transition flex items-center gap-1 cursor-pointer"
               >
-                {copiedShortUrl ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedShortUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedShortUrl ? 'Copied!' : 'Copy'}</span>
               </button>
+              <a
+                href={appUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold shrink-0 transition"
+                title="Open Live Link to Verify"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
+        </div>
+
+        {/* 1-Click Download Playbook Bar */}
+        <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-xs text-slate-300">
+            <span className="font-bold text-emerald-400">📥 Ty's Master Marketing Playbook:</span> Download complete ad copy, TikTok scripts, Reddit posts, solo ad swipes & objection FAQs.
+          </div>
+          <a
+            href="/CashCaptain_Marketeer_Master_Sales_Kit.txt"
+            download="CashCaptain_Marketeer_Master_Sales_Kit.txt"
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs flex items-center gap-2 border border-slate-700 transition cursor-pointer shadow shrink-0"
+          >
+            <Download className="w-4 h-4 text-emerald-400" />
+            <span>Download Marketing Kit (.TXT)</span>
+          </a>
         </div>
       </div>
 
@@ -230,16 +289,16 @@ export const CommercialSalesKit: React.FC = () => {
         </div>
 
         {/* Tier 2: Captain Pro (Most Popular) */}
-        <div className="bg-gradient-to-b from-[#1e293b] via-[#1e293b] to-blue-950/90 p-6 rounded-2xl border-2 border-amber-500 shadow-2xl flex flex-col justify-between space-y-6 relative transform md:-translate-y-2">
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 text-[11px] font-black uppercase px-4 py-1 rounded-full shadow-lg">
+        <div className="bg-slate-900/95 p-6 rounded-2xl border-2 border-emerald-400 shadow-2xl shadow-emerald-500/15 flex flex-col justify-between space-y-6 relative transform md:-translate-y-2">
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-400 text-slate-950 text-[11px] font-black uppercase px-4 py-1 rounded-full shadow-lg">
             ⭐ Most Popular &bull; Captain Pro
           </div>
           <div>
             <div className="flex items-center justify-between mb-2 mt-2">
-              <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider">
+              <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">
                 Captain Pro License
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
                 Best Value
               </span>
             </div>
@@ -251,15 +310,15 @@ export const CommercialSalesKit: React.FC = () => {
             </p>
             <ul className="text-xs text-slate-200 space-y-2.5 mt-5">
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span><strong>Unlimited</strong> Active Offers</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>100% Hands-Free Auto-Placement</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>Interactive Micro-Search Hubs</span>
               </li>
               <li className="flex items-center gap-2">
@@ -506,19 +565,39 @@ export const CommercialSalesKit: React.FC = () => {
               </div>
             </form>
           ) : (
-            <div className="bg-[#1e293b] p-4 rounded-xl border border-emerald-500/50 space-y-3 text-center">
+            <div className="bg-[#0c1222] p-5 rounded-2xl border border-emerald-500/40 space-y-3 text-center">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
                 <CheckCircle2 className="w-5 h-5" />
                 <span>Affiliate Partnership Active for {affiliateName}!</span>
               </div>
               <p className="text-xs text-slate-300">
-                Assigned Partner ID: <strong className="text-amber-400">Ref #{assignedPartnerId}</strong> &bull; Tier: <strong className="text-amber-300">{affiliateRewardChoice === 'cash_40' ? '40% Lifetime Cash' : '25% Cash + Free License'}</strong>
+                Assigned Partner ID: <strong className="text-emerald-400">Ref #{assignedPartnerId}</strong> &bull; Tier: <strong className="text-amber-300">{affiliateRewardChoice === 'cash_40' ? '40% Lifetime Cash' : '25% Cash + Free License'}</strong>
               </p>
-              <div className="bg-[#0f172a] p-3 rounded-lg border border-[#475569] font-mono text-xs text-sky-400 select-all">
-                https://ccm.app/ref{assignedPartnerId}
+              <div className="flex items-center justify-center gap-2 max-w-lg mx-auto">
+                <div className="bg-[#060913] px-3.5 py-2 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 select-all flex-1 truncate">
+                  {`${liveBaseUrl}/?ref=${assignedPartnerId}`}
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${liveBaseUrl}/?ref=${assignedPartnerId}`);
+                  }}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </button>
+                <a
+                  href={`${liveBaseUrl}/?ref=${assignedPartnerId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition"
+                  title="Open Link"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
               <p className="text-[11px] text-slate-400">
-                Share this short numbered link anywhere! All sales route commission to your PayPal ({affiliatePayPal}) and the balance to Y.W.G.T Online! / Virbis.com LLC.
+                Share this link anywhere! All sales automatically track your partner ID and commission.
               </p>
             </div>
           )}

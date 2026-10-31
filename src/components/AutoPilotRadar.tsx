@@ -31,9 +31,16 @@ import {
   Target,
   ShieldAlert,
   Upload,
-  X
+  X,
+  Lock,
+  Crown
 } from 'lucide-react';
-
+import {
+  canDeployNewOffer,
+  consumeCampaignSlot,
+  getUserLicense,
+  TIER_LIMITS
+} from '../services/userLicenseService';
 
 interface AutoPilotRadarProps {
   existingOffers: Offer[];
@@ -41,6 +48,8 @@ interface AutoPilotRadarProps {
   affiliateProConfig: AffiliateProConfig;
   onRecordClick: (offerId: string, offerName: string, affiliateId: string, targetUrl: string) => void;
   onOpenEmailModal?: () => void;
+  isMasterUser?: boolean;
+  onOpenLicenseModal?: () => void;
 }
 
 export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
@@ -48,7 +57,9 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   onSaveNewOffer,
   affiliateProConfig,
   onRecordClick,
-  onOpenEmailModal
+  onOpenEmailModal,
+  isMasterUser,
+  onOpenLicenseModal
 }) => {
   // Clean input form state ready for user's own affiliate offers
   const [productName, setProductName] = useState('');
@@ -104,7 +115,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
       onRecordClick(
         `auto-${lead.id}`,
         pName,
-        tag || 'Ty',
+        tag || 'AFF_TAG_01',
         link
       );
 
@@ -155,6 +166,10 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
       conversions: 0,
       revenue: 0
     };
+
+    // Permanently consume 1 campaign slot in user license state
+    consumeCampaignSlot(newOffer.id, pName, updatedLeads.length, !!isMasterUser);
+
     onSaveNewOffer(newOffer);
   };
 
@@ -162,6 +177,15 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   const handleLaunchAutoPilot = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productName.trim()) return;
+
+    // Check slot quota before launching
+    const quota = canDeployNewOffer(!!isMasterUser);
+    if (!quota.allowed) {
+      if (onOpenLicenseModal) {
+        onOpenLicenseModal();
+      }
+      return;
+    }
 
     setIsScanning(true);
     setActiveProductName(productName);
@@ -190,14 +214,20 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
         imagePreview || undefined
       );
 
+      const userLic = getUserLicense();
+      const maxLeads = isMasterUser ? 999999 : userLic.maxLeadsPerProduct;
+      const leadsToProcess = (!isMasterUser && maxLeads && leads.length > maxLeads)
+        ? leads.slice(0, maxLeads)
+        : leads;
+
       setScanStep('');
       setIsScanning(false);
 
       // If Hands-Free Mode is enabled (default), immediately auto-place across all targets
       if (handsFreeMode) {
-        await executeAutonomousPlacement(leads, productName, tag, destination);
+        await executeAutonomousPlacement(leadsToProcess, productName, tag, destination);
       } else {
-        setDiscoveredLeads(leads);
+        setDiscoveredLeads(leadsToProcess);
       }
     } catch (err) {
       console.error('Autonomous scan error:', err);
@@ -208,6 +238,15 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
   // Handle Quick One-Click Switch
   const handleQuickRun = (name: string, desc: string, tag: string, link: string) => {
+    // Check slot quota before launching
+    const quota = canDeployNewOffer(!!isMasterUser);
+    if (!quota.allowed) {
+      if (onOpenLicenseModal) {
+        onOpenLicenseModal();
+      }
+      return;
+    }
+
     setProductName(name);
     setProductDescription(desc);
     setAffiliateTag(tag);
@@ -224,11 +263,17 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
         setScanStep('⚡ Generating contextual replies with embedded link...');
 
         const leads = await findBuyerLeads(name, desc, tag, link);
+        const userLic = getUserLicense();
+        const maxLeads = isMasterUser ? 999999 : userLic.maxLeadsPerProduct;
+        const leadsToProcess = (!isMasterUser && maxLeads && leads.length > maxLeads)
+          ? leads.slice(0, maxLeads)
+          : leads;
+
         setScanStep('');
         setIsScanning(false);
 
         // Instantly auto-place without taking user anywhere
-        await executeAutonomousPlacement(leads, name, tag, link);
+        await executeAutonomousPlacement(leadsToProcess, name, tag, link);
       } catch (err) {
         console.error(err);
         setIsScanning(false);
@@ -245,10 +290,10 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-blue-950/80 via-[#1e293b] to-indigo-950/80 p-6 rounded-2xl border border-blue-500/30 shadow-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-[#334155]/80">
+      <div className="bg-[#0c1222] p-6 rounded-2xl border border-slate-800 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
               <Zap className="w-6 h-6 animate-pulse" />
             </div>
             <div>
@@ -261,13 +306,13 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                   Active & Auto-Posting
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-[#94a3b8]">
+              <p className="text-xs sm:text-sm text-slate-400">
                 Broadened web scrape monitors Want Ads (Marketplace/Craigslist ISO), Daily Search Trends, Comparison Sites, Review Sites, Gumroad, Pinterest, LinkedIn, Instagram, and Communities for any product.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-[#0f172a] px-3 py-1.5 rounded-xl border border-[#334155]">
+          <div className="flex items-center gap-2 bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800">
             <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
             <span className="text-xs font-bold text-slate-200">Autonomous Mode:</span>
             <span className="text-xs font-mono text-emerald-400 font-bold">ENABLED</span>
@@ -275,31 +320,92 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
         </div>
 
         {/* Clean Ready Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#0f172a]/90 p-3 rounded-xl border border-blue-500/30 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#060913] p-3.5 rounded-xl border border-slate-800 mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
             <span className="text-xs text-white font-bold">100% Ready for Any Product:</span>
-            <span className="text-xs text-[#94a3b8]">Physical goods (gold paydirt, gear), SaaS, tools, or local services — the engine finds buyers wanting to buy.</span>
+            <span className="text-xs text-slate-400">Physical goods (gold paydirt, gear), SaaS, tools, or local services — the engine finds buyers wanting to buy.</span>
           </div>
 
           {onOpenEmailModal && (
             <button
               type="button"
               onClick={onOpenEmailModal}
-              className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0"
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0"
               title="Configure your automated weekly dashboard briefings & sale alerts"
             >
-              <Mail className="w-3.5 h-3.5 text-amber-400" />
+              <Mail className="w-3.5 h-3.5 text-emerald-400" />
               <span>📬 Weekly Email Briefing & Sales Alerts</span>
             </button>
           )}
         </div>
 
+        {/* Campaign Slots & Tier Status Bar */}
+        {(() => {
+          const userLic = getUserLicense();
+          const quota = canDeployNewOffer(!!isMasterUser);
+
+          return (
+            <div className="mb-4 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#060913] p-3 rounded-xl border border-slate-800 text-xs">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-slate-300">Campaign Slot Quota:</span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                    {isMasterUser ? 'Master Developer (Unlimited Slots)' : `${quota.consumedCount} / ${quota.totalAllowed} Slots Deployed`}
+                  </span>
+                  {!isMasterUser && userLic.tier === 'starter' && (
+                    <span className="text-slate-400 text-[11px]">
+                      • Starter Tier (Top 5 Buyer Leads / 2 Channels per Product)
+                    </span>
+                  )}
+                  {(!isMasterUser && (userLic.tier === 'pro' || userLic.tier === 'lifetime')) && (
+                    <span className="text-emerald-400 text-[11px] font-semibold">
+                      • Full 38+ Buyer Channels Active
+                    </span>
+                  )}
+                </div>
+
+                {onOpenLicenseModal && !isMasterUser && userLic.tier !== 'lifetime' && (
+                  <button
+                    type="button"
+                    onClick={onOpenLicenseModal}
+                    className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg font-bold text-[11px] transition flex items-center gap-1 cursor-pointer shrink-0 self-start sm:self-auto"
+                  >
+                    <Crown className="w-3 h-3 text-emerald-400" />
+                    <span>Upgrade Slots</span>
+                  </button>
+                )}
+              </div>
+
+              {!quota.allowed && !isMasterUser && (
+                <div className="bg-red-950/40 border border-red-500/50 p-3.5 rounded-xl text-xs text-red-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-2">
+                    <Lock className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-white block">All {quota.totalAllowed} Campaign Slots Consumed:</strong>
+                      <span>Each deployed product permanently occupies a slot to maintain live auto-placement on buyer search nodes. To deploy additional products, upgrade your license.</span>
+                    </div>
+                  </div>
+                  {onOpenLicenseModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenLicenseModal}
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-lg transition-all shrink-0 cursor-pointer shadow-md"
+                    >
+                      Unlock 15 Slots (Captain Pro)
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Input Form */}
         <form onSubmit={handleLaunchAutoPilot} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div className="md:col-span-5">
-              <label className="block text-xs font-bold text-[#cbd5e1] mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Product Name *
               </label>
               <input
@@ -308,12 +414,12 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 placeholder="e.g., AI Copywriter Pro or Video Automator"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#475569] rounded-xl text-white text-sm focus:outline-none focus:border-[#3b82f6] shadow-inner font-semibold placeholder:text-[#64748b]"
+                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner font-semibold placeholder:text-slate-600"
               />
             </div>
 
             <div className="md:col-span-4">
-              <label className="block text-xs font-bold text-[#cbd5e1] mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Your Affiliate Link *
               </label>
               <input
@@ -322,12 +428,12 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 placeholder="https://your-affiliate-link.com/?aff=..."
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#475569] rounded-xl text-white text-xs focus:outline-none focus:border-[#3b82f6] font-mono shadow-inner text-sky-300 font-bold placeholder:text-[#64748b]"
+                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-emerald-400 font-bold placeholder:text-slate-600"
               />
             </div>
 
             <div className="md:col-span-3">
-              <label className="block text-xs font-bold text-[#cbd5e1] mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Affiliate Tag (Optional)
               </label>
               <input
@@ -335,13 +441,13 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 placeholder="Ty"
                 value={affiliateTag}
                 onChange={(e) => setAffiliateTag(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#475569] rounded-xl text-white text-xs focus:outline-none focus:border-[#3b82f6] font-mono shadow-inner placeholder:text-[#64748b]"
+                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner placeholder:text-slate-600"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#cbd5e1] mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
               Product Description / What Problem Does It Solve?
             </label>
             <textarea
@@ -349,15 +455,15 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
               placeholder="e.g., Autonomous B2B content marketing platform that conducts keyword research, writes expert-level technical articles, publishes automatically, and captures inbound qualified leads..."
               value={productDescription}
               onChange={(e) => setProductDescription(e.target.value)}
-              className="w-full px-4 py-2.5 bg-[#0f172a] border border-[#475569] rounded-xl text-white text-xs focus:outline-none focus:border-[#3b82f6] shadow-inner resize-y placeholder:text-[#64748b]"
+              className="w-full px-4 py-2.5 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner resize-y placeholder:text-slate-600"
             />
           </div>
 
           {/* Product Picture Input (Upload or Image URL) */}
-          <div className="bg-[#0f172a]/90 p-3.5 rounded-xl border border-slate-700/80 space-y-2.5">
+          <div className="bg-[#060913] p-4 rounded-xl border border-slate-800 space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-xs font-bold text-[#cbd5e1] uppercase tracking-wider">
-                <ImageIcon className="w-4 h-4 text-sky-400" />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <ImageIcon className="w-4 h-4 text-emerald-400" />
                 Product Picture / Ad Creative (Optional)
               </label>
               {imagePreview && (
@@ -448,25 +554,25 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
               disabled={isScanning || isAutoPlacing || !productName.trim()}
               className={`py-3.5 px-6 rounded-xl font-extrabold text-sm text-white transition-all shadow-xl flex items-center justify-center gap-2.5 cursor-pointer ${
                 isScanning || isAutoPlacing
-                  ? 'bg-blue-800 text-blue-300 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:opacity-95 active:scale-[0.99] shadow-emerald-500/25'
+                  ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20 active:scale-[0.99]'
               }`}
             >
               {isScanning ? (
                 <>
-                  <Crosshair className="w-4 h-4 animate-spin" />
+                  <Crosshair className="w-4 h-4 animate-spin text-slate-950" />
                   <span>Scanning Buyer Intent Discussions...</span>
                 </>
               ) : isAutoPlacing ? (
                 <>
-                  <Zap className="w-4 h-4 animate-bounce text-amber-300" />
+                  <Zap className="w-4 h-4 animate-bounce text-slate-950" />
                   <span>
                     Auto-Placing {placementProgress ? `(${placementProgress.current}/${placementProgress.total})...` : '...'}
                   </span>
                 </>
               ) : (
                 <>
-                  <Zap className="w-4 h-4 text-amber-300" />
+                  <Zap className="w-4 h-4 text-slate-950" />
                   <span>⚡ Auto-Place Link & Ads Across All Live Discussions</span>
                 </>
               )}
@@ -510,25 +616,25 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
       </div>
 
       {/* Multi-Category Correlation & Context-Strict Ad Placement Blueprint */}
-      <div className="bg-gradient-to-r from-slate-900 via-[#1e293b] to-slate-900 border border-blue-500/30 rounded-2xl p-4 shadow-xl space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#334155]/80">
+      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{adStrategy.categoryIcon}</span>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono uppercase text-blue-400 font-bold tracking-wider">AI Category Fit:</span>
+                <span className="text-xs font-mono uppercase text-emerald-400 font-bold tracking-wider">AI Category Fit:</span>
                 <span className="text-sm font-black text-white">{adStrategy.categoryTitle}</span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   Primary Domain Fit
                 </span>
                 {correlationProfile.correlatedCategories.length > 0 && (
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                    <Layers className="w-3 h-3 text-purple-400" />
+                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
+                    <Layers className="w-3 h-3 text-emerald-400" />
                     Correlates with {correlationProfile.allCategories.length} Site Types
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-300 mt-0.5">
+              <p className="text-[11px] text-slate-400 mt-0.5">
                 {correlationProfile.correlatedCategories.length > 0
                   ? 'Autonomous routing detects multi-style correlations—placing ads across all relevant marketplaces while strictly filtering out incompatible platforms.'
                   : 'Product links are strictly routed to outlets where this product naturally converts—never placed on incompatible platforms.'}
@@ -539,9 +645,9 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
           <button
             type="button"
             onClick={() => setShowStrategyDrawer((prev) => !prev)}
-            className="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1.5 font-bold cursor-pointer shrink-0 self-start sm:self-auto bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 transition"
+            className="text-xs text-slate-200 hover:text-white flex items-center gap-1.5 font-bold cursor-pointer shrink-0 self-start sm:self-auto bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition"
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
             <span>{showStrategyDrawer ? 'Hide Multi-Channel Blueprint' : 'View Correlated Outlets & Tactics'}</span>
           </button>
         </div>
@@ -682,40 +788,39 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
       {/* Live Active Placements Overview */}
       {discoveredLeads.length > 0 && (
         <div className="space-y-4">
-          <div className="bg-[#1e293b] p-4 rounded-xl border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-[#0c1222] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               {imagePreview ? (
                 <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-emerald-500/60 shadow shrink-0 bg-slate-900">
                   <img src={imagePreview} alt={activeProductName} className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shrink-0">
                   <Activity className="w-5 h-5" />
                 </div>
               )}
               <div>
-
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <span>Placements Live & Active: {discoveredLeads.length} Channels</span>
                   <span className="text-[11px] font-mono bg-emerald-950/70 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800">
                     Auto-Placed
                   </span>
                 </h3>
-                <p className="text-xs text-[#94a3b8]">
-                  Target Offer: <strong className="text-white">{activeProductName}</strong> &bull; Link: <code className="text-sky-300 font-mono">{targetUrl}</code>
+                <p className="text-xs text-slate-400">
+                  Target Offer: <strong className="text-white">{activeProductName}</strong> &bull; Link: <code className="text-emerald-400 font-mono">{targetUrl}</code>
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 text-xs">
-              <div className="bg-[#0f172a] px-3 py-1.5 rounded-lg border border-[#334155] text-slate-300 font-mono">
+              <div className="bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300 font-mono">
                 Auto-Cycle: <strong className="text-emerald-400">Every 6 Hours</strong>
               </div>
             </div>
           </div>
 
           {/* Channel Filter Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#334155]/60 text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs">
             <span className="text-slate-400 font-bold whitespace-nowrap">Filter Channels:</span>
             {[
               { id: 'all', label: `🌐 All (${discoveredLeads.length})` },
@@ -730,10 +835,10 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setChannelFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer ${
                   channelFilter === tab.id
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20'
+                    : 'bg-[#060913] text-slate-300 border border-slate-800 hover:text-white hover:border-slate-700'
                 }`}
               >
                 {tab.label}
@@ -785,7 +890,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 return (
                   <div
                     key={lead.id}
-                    className="bg-[#1e293b] rounded-xl p-5 border border-[#334155] shadow-lg hover:border-emerald-500/50 transition-all space-y-3"
+                    className="bg-[#0c1222] rounded-2xl p-5 border border-slate-800 shadow-xl hover:border-slate-700 transition-all space-y-3.5"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -894,6 +999,38 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 );
               })}
           </div>
+
+          {/* Happy Place Balance: Starter Proof of Work & Upgrade Teaser */}
+          {(() => {
+            const userLic = getUserLicense();
+            if (isMasterUser || userLic.tier !== 'starter') return null;
+
+            return (
+              <div className="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-emerald-950/60 border border-emerald-500/50 p-5 rounded-2xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-emerald-400 shrink-0" />
+                    <h4 className="text-sm font-black text-white">
+                      Top 5 High-Intent Buyer Discussions Reached &amp; Links Placed!
+                    </h4>
+                  </div>
+                  <p className="text-xs text-slate-300 max-w-xl">
+                    You've experienced Cash Captain's autonomous radar and link placement live in action. There are <strong>33 additional high-intent buyers</strong> actively debating and requesting products like <span className="text-emerald-300 font-semibold">{activeProductName || 'yours'}</span> across Google Trends, Reddit Want Ads &amp; Review boards.
+                  </p>
+                </div>
+                {onOpenLicenseModal && (
+                  <button
+                    type="button"
+                    onClick={onOpenLicenseModal}
+                    className="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap self-start sm:self-auto"
+                  >
+                    <Crown className="w-4 h-4 text-slate-950" />
+                    <span>Auto-Place Into All 38+ Buyers ($97)</span>
+                  </button>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

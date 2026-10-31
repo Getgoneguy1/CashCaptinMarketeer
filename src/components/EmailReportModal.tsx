@@ -25,6 +25,7 @@ import {
   buildReportMailtoUrl,
   OWNER_NOTIFICATION_EMAIL
 } from '../services/emailReportService';
+import { CashCaptainLogo } from './CashCaptainLogo';
 
 interface EmailReportModalProps {
   isOpen: boolean;
@@ -111,13 +112,11 @@ export const EmailReportModal: React.FC<EmailReportModalProps> = ({
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-3 border-b border-[#334155]">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center text-xl font-black shadow-md shadow-amber-500/20">
-            📬
-          </div>
+        <div className="flex items-center gap-3.5 pb-3 border-b border-zinc-800">
+          <CashCaptainLogo className="w-12 h-12 shrink-0 drop-shadow-[0_2px_14px_rgba(57,255,20,0.35)]" />
           <div>
             <h2 className="text-xl font-black text-white">
-              Email Activity Report & Backup
+              Email Activity Report &amp; Backup
             </h2>
             <p className="text-xs text-[#94a3b8]">
               Send a complete synopsis of your affiliate links, active ads, and tracking stats directly to your inbox.
