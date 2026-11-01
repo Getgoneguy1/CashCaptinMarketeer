@@ -88,7 +88,18 @@ export function getStoredClicks(): ClickEvent[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.CLICKS);
     if (!raw) return [];
-    return JSON.parse(raw);
+    const parsed: ClickEvent[] = JSON.parse(raw);
+    // Purge any legacy simulated or demo clicks
+    const cleanClicks = parsed.filter(
+      (c) =>
+        !c.id.includes('sim') &&
+        !c.id.includes('mock') &&
+        !c.id.includes('demo') &&
+        !c.query?.toLowerCase().includes('blueprint') &&
+        !c.query?.toLowerCase().includes('simulator') &&
+        !c.query?.toLowerCase().includes('demo')
+    );
+    return cleanClicks;
   } catch (err) {
     return [];
   }

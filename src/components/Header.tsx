@@ -9,9 +9,12 @@ import {
   Share2,
   Crown,
   Eye,
-  Sliders
+  Sliders,
+  User,
+  KeyRound
 } from 'lucide-react';
 import { MasterAuthSession } from '../types';
+import { AppUserProfile } from '../services/userAuthService';
 import { CashCaptainLogo } from './CashCaptainLogo';
 
 export type NavTab = 'autopilot' | 'offers' | 'copy' | 'hubs' | 'social' | 'affiliate_pro' | 'ledger' | 'partner' | 'utilities' | 'sales';
@@ -33,6 +36,8 @@ interface HeaderProps {
   onOpenMasterAccess: () => void;
   onToggleMasterViewMode?: () => void;
   onOpenLicenseModal?: () => void;
+  currentUser?: AppUserProfile | null;
+  onOpenAuthModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,7 +56,9 @@ export const Header: React.FC<HeaderProps> = ({
   masterSession,
   onOpenMasterAccess,
   onToggleMasterViewMode,
-  onOpenLicenseModal
+  onOpenLicenseModal,
+  currentUser,
+  onOpenAuthModal
 }) => {
   // Secret multi-tap on logo to open Master Login discreetly
   const [logoClicks, setLogoClicks] = useState(0);
@@ -75,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-4 sm:gap-6 md:gap-7">
             <button
               onClick={handleLogoClick}
-              title="Cash Captain Marketeer™ (Click 3x for Master Access)"
+              title="Cash Captain Marketeer™"
               className="relative p-1 bg-transparent border-0 cursor-pointer transition-transform duration-200 select-none shrink-0 group focus:outline-none hover:scale-105 active:scale-95"
               aria-label="Cash Captain Logo"
             >
@@ -179,15 +186,27 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
 
-            {/* Social Media Blast */}
-            <button
-              onClick={() => setActiveTab('social')}
-              className="px-3 py-2 rounded-lg font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-emerald-500/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="Syndicate Advertisements across Social Platforms"
-            >
-              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Social Blast</span>
-            </button>
+            {/* User Account / Sign In Button (First Spot) */}
+            {currentUser ? (
+              <button
+                onClick={onOpenAuthModal}
+                className="px-3 py-2 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-emerald-500/50 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="View My Account & Campaign Quota"
+              >
+                <div className="w-2 h-2 rounded-full bg-[#39ff14] animate-pulse"></div>
+                <User className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="max-w-[120px] truncate">{currentUser.displayName || currentUser.email}</span>
+              </button>
+            ) : (
+              <button
+                onClick={onOpenAuthModal}
+                className="px-3.5 py-2 rounded-lg font-black text-xs bg-[#39ff14] hover:bg-[#32e012] text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20"
+                title="Sign in or create free account to save your offers"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-slate-950" />
+                <span>Log In / Sign Up</span>
+              </button>
+            )}
 
             {/* Email Alerts */}
             <button
@@ -197,6 +216,16 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Mail className="w-3.5 h-3.5 text-slate-400" />
               <span>Email Alerts</span>
+            </button>
+
+            {/* Social Media Blast */}
+            <button
+              onClick={() => setActiveTab('social')}
+              className="px-3 py-2 rounded-lg font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-emerald-500/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Syndicate Advertisements across Social Platforms"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Social Blast</span>
             </button>
 
             {/* Customer License / Upgrade Button */}
@@ -217,7 +246,7 @@ export const Header: React.FC<HeaderProps> = ({
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 text-slate-950" />
-                  <span>⚡ License &amp; Slots</span>
+                  <span>Buy License</span>
                 </>
               )}
             </button>
@@ -250,18 +279,6 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[11px] px-1.5 py-0.2 rounded bg-slate-950 text-emerald-400 font-mono">
               {offerCount}
             </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('copy')}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'copy'
-                ? 'bg-slate-700 text-white font-bold border border-slate-600 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span>Promo Copy</span>
           </button>
 
           <button

@@ -67,7 +67,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-[#94a3b8]">
-                Created for Ty Birchfield & Authorized License Holders &bull; Step-by-Step Operations
+                Official Cash Captain Operating Manual &bull; Authorized License Holders
               </p>
             </div>
           </div>

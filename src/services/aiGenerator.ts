@@ -843,33 +843,48 @@ export async function findBuyerLeads(
     try {
       const ai = new GoogleGenAI({ apiKey });
       const prompt = `
-You are an autonomous AI buyer-intent placement agent.
-The user wants to find active buyers for:
+You are an elite direct-response copywriter and autonomous buyer-intent placement agent.
+The user wants to find active buyers and craft the HIGHEST CONVERTING ad copy possible for:
 Product: ${productName}
 Description: ${productDescription}
 Affiliate Link: ${deepLink}
 Detected Category: ${categoryDef.title} (Top Platforms: ${categoryDef.top1}, ${categoryDef.top2})
 
-Search the web and specific buyer marketplaces to locate 7-8 active buyer inquiries, ISO (In Search Of) posts, wanted listings, and purchase discussions across these exact categories:
-1. Top Marketplaces for this product type:
-${categoryDef.platforms.map((p) => `   - ${p.name} (${p.type}): ${p.buyerFocus}`).join('\n')}
-2. Want Ads & Classifieds: Facebook Marketplace ISO, Craigslist WTB, OfferUp, Mercari
-3. B2B & Wholesale / Specialty: ProducePay/FBX (for produce/apples), Liquidation.com/B-Stock (for surplus/toner/electronics), Acquire.com/Flippa/AppSumo (for SaaS), Poshmark/Depop (for fashion), Swappa/eBay/Newegg (for tech)
-4. Review & Community Inquiries: Trustpilot/Yelp competitor intercepts, Reddit niche communities, and Quora
+Generate 6-8 high-intent buyer inquiries and the highest-converting ad copy possible across these formats:
+1. Viral Video Ad (TikTok / YouTube Shorts / Reels):
+   - platform: "TikTok / YouTube Shorts Video Ad"
+   - adType: "video_ad"
+   - viralHook: A killer 3-second scroll-stopping hook that grabs attention immediately.
+   - videoScript: An object with { "hook": "...", "visualDirection": "[Scene 1... Scene 2...]", "voiceoverScript": "...", "caption": "..." with ${deepLink} }
+   - tailoredAdCopy: The full video script with Hook, Visuals, Voiceover, and CTA link: ${deepLink}
+2. Peer-to-Peer Community Recommendation (Reddit niche subreddits, Quora):
+   - platform: "Reddit" or "Quora"
+   - adType: "discussion"
+   - tailoredAdCopy: Authentic, expert, value-first response that solves their problem, highlights why ${productName} is the best choice, and naturally includes: ${deepLink}
+3. Want Ads & Buyer Inquiries (Facebook Marketplace ISO, Classifieds, Craigslist WTB):
+   - platform: "Want Ads (Marketplace/Classifieds)"
+   - adType: "classified"
+   - tailoredAdCopy: Punchy, benefit-driven ad copy with bulleted advantages and instant access link: ${deepLink}
+4. B2B / Specialized Marketplace Inquiries (${categoryDef.top1}, ${categoryDef.top2}):
+   - platform: "${categoryDef.top1}"
+   - adType: "classified"
+   - tailoredAdCopy: Professional, high-trust procurement recommendation with link: ${deepLink}
 
-For each lead found:
-- platform: Specific platform name (e.g. "${categoryDef.platforms[0]?.name || 'Facebook Marketplace'}", "eBay", "Swappa", "ProducePay", "Acquire.com", "AppSumo", "Poshmark", "Liquidation.com", "Reddit")
-- channelCategory: "${detectedCategory}" or "want_ads" or "community"
-- marketplaceName: Exact marketplace name (e.g. "${categoryDef.top1}", "${categoryDef.top2}", "Facebook Marketplace", "eBay")
-- communityName: Exact community, category or marketplace listing section
-- threadTitle: Exact inquiry / WTB title (e.g., "ISO: Looking to buy bulk ${productName}", "Wanted: Reliable source for ${productName}")
-- threadUrl: Direct search query or listing URL
-- buyerIntentScore: 92 to 99
-- buyerPainPoint: Specific problem or procurement need
-- tailoredAdCopy: Helpful, natural response that directly solves their need and includes: "${deepLink}"
+For each lead, return:
+- platform: string
+- adType: "video_ad" | "discussion" | "classified"
+- viralHook: string (compelling 3-second hook)
+- videoScript: object (if video_ad, with hook, visualDirection, voiceoverScript, caption)
+- channelCategory: string
+- marketplaceName: string
+- communityName: string
+- threadTitle: string (target inquiry or buyer debate)
+- threadUrl: string
+- buyerIntentScore: number (90-99)
+- buyerPainPoint: string
+- tailoredAdCopy: string (the highest converting ad copy possible, with ${deepLink})
 
-Return strictly a JSON array of objects with keys:
-"platform", "channelCategory", "marketplaceName", "communityName", "threadTitle", "threadUrl", "buyerIntentScore", "buyerPainPoint", "tailoredAdCopy"
+Return strictly a valid JSON array of objects.
 `;
 
       const response = await ai.models.generateContent({
@@ -888,6 +903,9 @@ Return strictly a JSON array of objects with keys:
         return parsed.map((item, idx) => ({
           id: `lead-${Date.now()}-${idx}`,
           platform: item.platform || categoryDef.top1,
+          adType: item.adType || (item.platform?.toLowerCase().includes('video') || item.platform?.toLowerCase().includes('tiktok') ? 'video_ad' : 'discussion'),
+          viralHook: item.viralHook || undefined,
+          videoScript: item.videoScript || undefined,
           channelCategory: (item.channelCategory as BuyerChannelCategory) || detectedCategory,
           marketplaceName: item.marketplaceName || item.platform || categoryDef.top1,
           communityName: item.communityName || `${categoryDef.title} Marketplace`,
@@ -921,6 +939,28 @@ export function generateAutonomousBuyerLeads(
   // 1. DIGITAL PRODUCTS, SOFTWARE & SAAS
   if (category === 'saas_digital') {
     return [
+      {
+        id: `lead-${Date.now()}-video`,
+        platform: 'TikTok / YouTube Shorts Video Ad',
+        adType: 'video_ad',
+        viralHook: `Stop scrolling if you need ${cleanName}! Here is the secret tool nobody talks about...`,
+        videoScript: {
+          hook: `If you're still doing ${cleanName} the hard way, you need to see this right now.`,
+          visualDirection: `[Scene 1: Hold up phone or point at screen showing problem. Cut to quick screen demo of ${cleanName}. Fast text overlays with dynamic music.]`,
+          voiceoverScript: `Stop wasting hours trying to do this manually. ${cleanName} completely handles it on auto-pilot. Tap the link right now to grab it before this deal expires!`,
+          caption: `This completely changed how I handle ${cleanName} 🤯 Tap the link or visit: ${deepLink} #viral #${cleanName.toLowerCase().replace(/\s+/g, '')} #musthave`
+        },
+        channelCategory: 'social_intent',
+        marketplaceName: 'TikTok & Shorts Viral Feed',
+        communityName: 'For You Page (FYP) & Short-Form Video',
+        threadTitle: `Viral Video Ad: "Stop doing ${cleanName} the hard way"`,
+        threadUrl: `https://www.tiktok.com/tag/${encodeURIComponent(cleanName.replace(/\s+/g, ''))}`,
+        buyerIntentScore: 99,
+        buyerPainPoint: 'Social media viewers needing immediate visual proof and effortless problem solving.',
+        tailoredAdCopy: `[VIRAL VIDEO SCRIPT]\n⚡ 3-Sec Hook: "If you're still doing ${cleanName} the hard way, stop right now."\n🎬 Visual: [Quick screen recording / demo showing instant results with ${cleanName}]\n🎙️ Voiceover: "Stop wasting hours doing this manually. ${cleanName} handles it completely on auto-pilot."\n🔗 Call To Action: "Tap the link right here to get instant access: ${deepLink}"`,
+        affiliateDeepLink: deepLink,
+        status: 'Ready to Post'
+      },
       {
         id: `lead-${Date.now()}-1`,
         platform: 'Acquire.com',

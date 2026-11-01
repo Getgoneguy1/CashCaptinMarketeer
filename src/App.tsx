@@ -21,6 +21,7 @@ import { AccountingCard } from './components/AccountingCard';
 import { PipelineCard } from './components/PipelineCard';
 import { OfferForm } from './components/OfferForm';
 import { OfferList } from './components/OfferList';
+import { AiCommander } from './components/AiCommander';
 import { SearchToolHub } from './components/SearchToolHub';
 import { ClickTrackerLog } from './components/ClickTrackerLog';
 import { SearchToolWidget } from './components/SearchToolWidget';
@@ -39,6 +40,8 @@ import { MasterAccessModal } from './components/MasterAccessModal';
 import { MasterTopTierSuite } from './components/MasterTopTierSuite';
 import { CustomerAffiliateProgram } from './components/CustomerAffiliateProgram';
 import { UserLicenseModal } from './components/UserLicenseModal';
+import { UserAuthModal } from './components/UserAuthModal';
+import { getStoredUserProfile, AppUserProfile } from './services/userAuthService';
 import { getMasterSession, getMasterAppSettings, toggleMasterViewMode } from './services/masterAuthService';
 import { MasterAuthSession, MasterAppSettings } from './types';
 import { checkAndTriggerWeeklySchedule } from './services/emailReportService';
@@ -111,6 +114,8 @@ export const App: React.FC = () => {
   const [showUserGuideModal, setShowUserGuideModal] = useState<boolean>(false);
   const [showMasterModal, setShowMasterModal] = useState<boolean>(false);
   const [showLicenseModal, setShowLicenseModal] = useState<boolean>(false);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<AppUserProfile | null>(() => getStoredUserProfile());
   const [masterSession, setMasterSession] = useState<MasterAuthSession>(() => getMasterSession());
   const [appSettings, setAppSettings] = useState<MasterAppSettings>(() => getMasterAppSettings());
   const [activeModalTool, setActiveModalTool] = useState<{
@@ -404,9 +409,25 @@ export const App: React.FC = () => {
         onOpenMasterAccess={() => setShowMasterModal(true)}
         onToggleMasterViewMode={handleToggleMasterViewMode}
         onOpenLicenseModal={() => setShowLicenseModal(true)}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setShowAuthModal(true)}
       />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+        {/* UNIVERSAL AI COMMANDER (VOICE & TEXT CONTROL + 3-IN-1 CROSS-APP COMMUNICATION) */}
+        <AiCommander
+          offers={offers}
+          tracking={tracking}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onSaveNewOffer={handleSaveNewOffer}
+          onOpenSocialBlast={() => setShowSocialBlastModal(true)}
+          onOpenLicenseModal={() => setShowLicenseModal(true)}
+          onOpenAuthModal={() => setShowAuthModal(true)}
+          masterSession={masterSession}
+          currentUser={currentUser}
+        />
+
         {/* TOP-TIER USABILITY SUITE (ONLY FOR MASTER OWNER IN ADMIN MODE) */}
         {masterSession.isMasterLoggedIn && masterSession.viewMode === 'admin' && (
           <div className="mb-6">
@@ -478,6 +499,11 @@ export const App: React.FC = () => {
 
             <OfferList
               offers={offers}
+              onUpdateOffer={(updatedOffer) => {
+                const updated = offers.map((o) => (o.id === updatedOffer.id ? updatedOffer : o));
+                setOffers(updated);
+                saveOffers(updated);
+              }}
               onDeleteOffer={handleDeleteOffer}
               onRegenerateOffer={handleRegenerateOffer}
               onTestSearchTool={(tool, offer) => setActiveModalTool({ tool, offer })}
@@ -493,6 +519,11 @@ export const App: React.FC = () => {
         {activeTab === 'copy' && (
           <PromoCopyCenter
             offers={offers}
+            onUpdateOffer={(updatedOffer) => {
+              const updated = offers.map((o) => (o.id === updatedOffer.id ? updatedOffer : o));
+              setOffers(updated);
+              saveOffers(updated);
+            }}
             onOpenSearchTool={(offer) => {
               const tool = offer.platform_copy?.micro_search_tools?.[0];
               if (tool) {
@@ -522,13 +553,16 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* TAB 4: CONNECT AFFILIATE PRO */}
+        {/* TAB 4: CONNECT 3-IN-1 AI SUITE */}
         {activeTab === 'affiliate_pro' && (
           <AffiliateProConnect
             config={affiliateProConfig}
             onSaveConfig={handleSaveAffiliatePro}
             offers={offers}
             onImportOffers={handleBulkImport}
+            masterSession={masterSession}
+            currentUser={currentUser}
+            onOpenLicenseModal={() => setShowLicenseModal(true)}
           />
         )}
 
@@ -539,25 +573,12 @@ export const App: React.FC = () => {
               tracking={tracking}
               offers={offers}
               onUpdateMetrics={handleUpdateMetrics}
-              onSimulateClick={handleSimulateClick}
-              onRecordConversion={(offerId, amt) => handleTriggerConversion(offerId, amt)}
             />
 
             <ClickTrackerLog
               clickEvents={clickEvents}
               offers={offers}
-              onTriggerConversion={handleTriggerConversion}
             />
-
-            <div className="pt-2">
-              <PipelineCard
-                offers={offers}
-                logs={buildLogs}
-                isBuilding={isBuilding}
-                onRebuild={handleRebuildAll}
-                onViewHubs={() => setActiveTab('hubs')}
-              />
-            </div>
           </div>
         )}
 
@@ -658,6 +679,28 @@ export const App: React.FC = () => {
         appSettings={appSettings}
       />
 
+      {/* Modal: Customer User Account & Authentication Portal */}
+      <UserAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        currentUser={currentUser}
+        onUserChanged={(user) => {
+          setCurrentUser(user);
+          if (user?.isMasterOwner) {
+            setMasterSession({
+              isMasterLoggedIn: true,
+              userEmail: user.email,
+              userName: user.displayName,
+              role: 'master_creator',
+              viewMode: 'admin',
+              loginTimestamp: new Date().toISOString()
+            });
+          }
+        }}
+        onMasterSessionChanged={(session) => setMasterSession(session)}
+        onOpenLicenseModal={() => setShowLicenseModal(true)}
+      />
+
       {/* Floating Mode Switcher (Visible ONLY to Ty when viewing the app in Customer Mode) */}
       {masterSession.isMasterLoggedIn && masterSession.viewMode === 'customer' && (
         <aside aria-label="Master Controls" className="fixed bottom-4 right-4 z-50 bg-slate-900/95 border border-emerald-500/50 rounded-xl px-3.5 py-2 shadow-2xl backdrop-blur flex items-center gap-2.5 text-xs">
@@ -697,22 +740,22 @@ export const App: React.FC = () => {
               <span className="font-extrabold text-[#39ff14] text-xs italic">Marketeer!™</span>
             </div>
             <span>&bull;</span>
-            <span className="text-slate-300">Created by <strong className="text-white">Ty Birchfield</strong></span>
-            <span className="text-amber-300/80 text-[11px]">&bull; {appSettings.companyName}</span>
+            <span className="text-slate-300">Yeah We Got That Online</span>
+            <span className="text-amber-300/80 text-[11px]">&bull; A Virbis.com Company</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
             <span className="flex items-center gap-1.5 text-emerald-400">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              Encrypted PayPal Ready
+              Encrypted Checkout
             </span>
             <span>&bull;</span>
             <span>All Rights Reserved</span>
-            {/* Subtle, discrete owner access button */}
+            {/* Subtle security portal */}
             <button
               onClick={() => setShowMasterModal(true)}
-              className="text-slate-600 hover:text-emerald-400 transition-colors p-1 cursor-pointer"
-              title="Staff / Creator Entry"
-              aria-label="Staff Portal"
+              className="text-slate-600 hover:text-slate-400 transition-colors p-1 cursor-pointer"
+              title="Security Portal"
+              aria-label="Security Portal"
             >
               <Lock className="w-3 h-3" />
             </button>

@@ -218,6 +218,51 @@ export const UserLicenseModal: React.FC<UserLicenseModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Commercial Add-ons */}
+            <div className="bg-[#060913] p-3.5 rounded-xl border border-slate-800 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                  Power Suite Add-Ons:
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono font-bold">Pay Once &bull; Lifetime Use</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                <div className="p-3 bg-slate-900/80 rounded-lg border border-blue-500/30 flex items-center justify-between gap-2">
+                  <div>
+                    <strong className="text-white block text-xs">Add AI Multi-Offer Hub</strong>
+                    <span className="text-slate-400 text-[11px]">Affiliate Pro Syndicator</span>
+                  </div>
+                  <a
+                    href={`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(
+                      paypalRecipient
+                    )}&item_name=Affiliate+Pro+AI+Multi-Offer+Hub+Add-on&amount=47.00&currency_code=USD`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 bg-blue-500 hover:bg-blue-400 text-slate-950 font-black text-xs rounded transition whitespace-nowrap cursor-pointer shadow-sm"
+                  >
+                    Add (+$47) &rarr;
+                  </a>
+                </div>
+
+                <div className="p-3 bg-slate-900/80 rounded-lg border border-purple-500/30 flex items-center justify-between gap-2">
+                  <div>
+                    <strong className="text-white block text-xs">Add AI Traffic Assistant</strong>
+                    <span className="text-slate-400 text-[11px]">Viral Video Hooks &amp; Shorts</span>
+                  </div>
+                  <a
+                    href={`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(
+                      paypalRecipient
+                    )}&item_name=Affiliate+Viral+AI+Traffic+Assistant+Add-on&amount=47.00&currency_code=USD`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 bg-purple-500 hover:bg-purple-400 text-slate-950 font-black text-xs rounded transition whitespace-nowrap cursor-pointer shadow-sm"
+                  >
+                    Add (+$47) &rarr;
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

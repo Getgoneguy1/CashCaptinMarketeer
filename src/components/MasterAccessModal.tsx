@@ -222,48 +222,37 @@ export const MasterAccessModal: React.FC<MasterAccessModalProps> = ({
               <form onSubmit={handleLogin} className="space-y-3 bg-slate-950/90 p-4 rounded-xl border border-slate-800">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">
-                    Owner Email Address
+                    Administrator Email Address
                   </label>
                   <input
                     type="email"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
-                    placeholder="tymesup4us@gmail.com"
+                    placeholder="admin@domain.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
-                    <span>Master Security PIN / Key</span>
-                    <span className="text-[11px] text-emerald-400 font-normal">PIN: 777888</span>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Master Security Key or PIN
                   </label>
                   <input
                     type="password"
                     value={keyInput}
                     onChange={(e) => setKeyInput(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none tracking-widest"
-                    placeholder="Enter Master PIN or Master Key"
+                    placeholder="••••••••"
                   />
                 </div>
 
-                <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                <div className="pt-2">
                   <button
                     type="submit"
-                    className="flex-1 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Unlock className="w-4 h-4" />
-                    <span>Unlock Master Control</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleQuickBypass}
-                    className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-lg text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    title="1-Click Owner Verification"
-                  >
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <span>Owner 1-Click Verification</span>
+                    <span>Authenticate Master Control</span>
                   </button>
                 </div>
               </form>

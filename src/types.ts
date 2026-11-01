@@ -69,6 +69,7 @@ export type BuyerChannelCategory =
   | 'pinterest'
   | 'linkedin'
   | 'instagram'
+  | 'social_intent'
   | 'community';
 
 export interface BuyerLead {
@@ -100,6 +101,14 @@ export interface BuyerLead {
   status: 'Discovered' | 'Ready to Post' | 'Posted' | 'Auto-Deployed' | 'Auto-Placed & Live';
   postedAt?: string;
   impressions?: number;
+  adType?: 'discussion' | 'video_ad' | 'classified' | 'social_hook';
+  viralHook?: string;
+  videoScript?: {
+    hook: string;
+    visualDirection: string;
+    voiceoverScript: string;
+    caption: string;
+  };
 }
 
 export interface Offer {
@@ -156,6 +165,10 @@ export interface AffiliateProConfig {
   app3Url?: string;
   app3Description?: string;
   ecosystemDomain?: string;
+  isHubLinked?: boolean;
+  hubUserEmail?: string;
+  isViralLinked?: boolean;
+  viralUserEmail?: string;
 }
 
 export interface MasterAuthSession {

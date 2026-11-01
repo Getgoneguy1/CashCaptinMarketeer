@@ -155,41 +155,6 @@ export const UtilitiesPage: React.FC<UtilitiesPageProps> = ({
         className="hidden"
       />
 
-      {/* Netlify One-Click Deployment Banner */}
-      <div className="bg-gradient-to-r from-teal-950/60 via-slate-900 to-teal-950/60 border border-teal-500/40 p-5 rounded-2xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-300 border border-teal-500/40 flex items-center justify-center font-black text-sm">
-              N
-            </span>
-            <h3 className="text-base font-black text-white">
-              Ready to Host on Netlify (100% Free &amp; Independent)
-            </h3>
-          </div>
-          <p className="text-xs text-slate-300 max-w-xl">
-            Download the pre-compiled, lightweight production zip (includes SPA routing <code className="text-teal-300 font-mono">_redirects</code>). Unzip the file and drag-and-drop the folder directly onto <strong>app.netlify.com/drop</strong> for instant live hosting with zero Google dependence.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <a
-            href="/cashcaptain_netlify.zip"
-            download="cashcaptain_netlify.zip"
-            className="px-5 py-3 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-black text-xs transition-all flex items-center gap-2 shadow-lg shadow-teal-500/20 cursor-pointer whitespace-nowrap"
-          >
-            <Download className="w-4 h-4 text-slate-950" />
-            <span>Download Netlify Zip (2.1 MB)</span>
-          </a>
-          <a
-            href="https://app.netlify.com/drop"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center gap-1.5"
-          >
-            <span>Open Netlify Drop &rarr;</span>
-          </a>
-        </div>
-      </div>
-
       {/* Grid of Utilities */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* CARD 1: Local Backup Export */}

@@ -1,17 +1,16 @@
 import React from 'react';
 import { ClickEvent, Offer } from '../types';
-import { MousePointerClick, CheckCircle, ExternalLink, ShieldCheck, DollarSign } from 'lucide-react';
+import { MousePointerClick, CheckCircle, ExternalLink, ShieldCheck } from 'lucide-react';
 
 interface ClickTrackerLogProps {
   clickEvents: ClickEvent[];
   offers: Offer[];
-  onTriggerConversion: (offerId: string, amount: number, clickId: string) => void;
+  onTriggerConversion?: (offerId: string, amount: number, clickId: string) => void;
 }
 
 export const ClickTrackerLog: React.FC<ClickTrackerLogProps> = ({
   clickEvents,
-  offers,
-  onTriggerConversion
+  offers
 }) => {
   return (
     <div className="bg-[#0c1222] rounded-2xl p-6 border border-slate-800 shadow-xl mb-6 space-y-4">
@@ -19,24 +18,26 @@ export const ClickTrackerLog: React.FC<ClickTrackerLogProps> = ({
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <MousePointerClick className="w-5 h-5 text-emerald-400" />
-            Click Tracker & Real-Time Redirect Logs
+            <span>Real-Time Visitor Clicks &amp; Traffic Logs</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Records every incoming micro-search query, affiliate tag injection, and conversion attribution
+            Records incoming traffic to your affiliate links and placed campaigns.
           </p>
         </div>
 
-        <span className="text-xs font-mono text-emerald-400 bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800">
-          Port 8081 /click listener active
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-emerald-400 bg-[#060913] px-3 py-1 rounded-xl border border-emerald-500/30">
+            {clickEvents.length} Recorded {clickEvents.length === 1 ? 'Click' : 'Clicks'}
+          </span>
+        </div>
       </div>
 
       {clickEvents.length === 0 ? (
-        <div className="bg-[#060913] p-8 rounded-xl border border-slate-800 text-center text-slate-400">
-          <MousePointerClick className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-          <p className="text-sm font-bold text-white mb-1">No Click Events Recorded Yet</p>
-          <p className="text-xs">
-            Test any micro-search tool or use the Simulator in the Control Center to record live clicks.
+        <div className="bg-[#060913] p-8 rounded-xl border border-slate-800 text-center text-slate-400 space-y-2">
+          <MousePointerClick className="w-8 h-8 text-slate-600 mx-auto" />
+          <p className="text-sm font-bold text-white">No Clicks Recorded Yet</p>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            When users click your placed affiliate links across Reddit, Forums, or Social channels, click records will appear here in real time.
           </p>
         </div>
       ) : (
@@ -47,9 +48,9 @@ export const ClickTrackerLog: React.FC<ClickTrackerLogProps> = ({
                 <th className="py-3 px-3">Time</th>
                 <th className="py-3 px-3">Offer Name</th>
                 <th className="py-3 px-3">Affiliate Tag</th>
-                <th className="py-3 px-3">Search Query</th>
-                <th className="py-3 px-3">Target Deep Link</th>
-                <th className="py-3 px-3 text-right">Attribution</th>
+                <th className="py-3 px-3">Traffic Source</th>
+                <th className="py-3 px-3">Destination Link</th>
+                <th className="py-3 px-3 text-right">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -71,10 +72,10 @@ export const ClickTrackerLog: React.FC<ClickTrackerLogProps> = ({
                     <td className="py-3 px-3 text-slate-300">
                       {evt.query ? (
                         <span className="bg-[#060913] px-2.5 py-1 rounded-lg text-emerald-400 border border-slate-800 font-mono">
-                          "{evt.query}"
+                          {evt.query}
                         </span>
                       ) : (
-                        <span className="text-slate-500 italic">Direct redirect</span>
+                        <span className="text-slate-400">Direct Link Click</span>
                       )}
                     </td>
                     <td className="py-3 px-3 font-mono text-[11px] text-slate-300 max-w-xs truncate">
@@ -95,13 +96,10 @@ export const ClickTrackerLog: React.FC<ClickTrackerLogProps> = ({
                           Converted
                         </span>
                       ) : (
-                        <button
-                          onClick={() => onTriggerConversion(evt.offerId, 38.00, evt.id)}
-                          className="px-3 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center gap-1"
-                        >
-                          <DollarSign className="w-3 h-3 text-emerald-400" />
-                          <span>Attribute $38 Sale</span>
-                        </button>
+                        <span className="inline-flex items-center gap-1 text-slate-400 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
+                          <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                          Tracked
+                        </span>
                       )}
                     </td>
                   </tr>

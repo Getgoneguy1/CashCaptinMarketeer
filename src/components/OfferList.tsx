@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Offer, MicroSearchTool, PlatformCopyStrategy } from '../types';
+import { Offer, MicroSearchTool, PlatformCopyStrategy, BuyerLead } from '../types';
 import {
   Tag,
   Copy,
@@ -13,8 +13,14 @@ import {
   Code,
   HelpCircle,
   KeyRound,
-  FileText
+  FileText,
+  Edit3,
+  Save,
+  X,
+  Flame,
+  ShieldCheck
 } from 'lucide-react';
+import { generateAutonomousBuyerLeads } from '../services/aiGenerator';
 
 interface OfferListProps {
   offers: Offer[];
@@ -22,6 +28,7 @@ interface OfferListProps {
   onRegenerateOffer: (offer: Offer) => Promise<void>;
   onTestSearchTool: (tool: MicroSearchTool, offer: Offer) => void;
   onViewOfferHub: (offer: Offer) => void;
+  onUpdateOffer?: (updatedOffer: Offer) => void;
 }
 
 export const OfferList: React.FC<OfferListProps> = ({
@@ -29,13 +36,21 @@ export const OfferList: React.FC<OfferListProps> = ({
   onDeleteOffer,
   onRegenerateOffer,
   onTestSearchTool,
-  onViewOfferHub
+  onViewOfferHub,
+  onUpdateOffer
 }) => {
   const [expandedOfferId, setExpandedOfferId] = useState<string | null>(offers[0]?.id || null);
   const [activePlatformTab, setActivePlatformTab] = useState<Record<string, string>>({});
   const [showJsonView, setShowJsonView] = useState<Record<string, boolean>>({});
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+
+  // Placed ad editing state
+  const [editingLeadId, setEditingLeadId] = useState<string | null>(null);
+  const [editedLeadCopy, setEditedLeadCopy] = useState<string>('');
+  const [editedLeadHook, setEditedLeadHook] = useState<string>('');
+  const [editedLeadVoiceover, setEditedLeadVoiceover] = useState<string>('');
+  const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
 
   const toggleExpand = (id: string) => {
     setExpandedOfferId((prev) => (prev === id ? null : id));
@@ -54,6 +69,50 @@ export const OfferList: React.FC<OfferListProps> = ({
     } finally {
       setRegeneratingId(null);
     }
+  };
+
+  const handleStartEditLead = (lead: BuyerLead) => {
+    setEditingLeadId(lead.id);
+    setEditedLeadCopy(lead.tailoredAdCopy);
+    setEditedLeadHook(lead.videoScript?.hook || lead.viralHook || '');
+    setEditedLeadVoiceover(lead.videoScript?.voiceoverScript || '');
+  };
+
+  const handleSaveLeadEdit = (offer: Offer, leadId: string) => {
+    const leads = offer.buyer_leads && offer.buyer_leads.length > 0
+      ? offer.buyer_leads
+      : generateAutonomousBuyerLeads(offer.product_name, offer.product_description, offer.affiliate_id, offer.target_url || 'https://example.com');
+
+    const updatedLeads = leads.map((lead) => {
+      if (lead.id !== leadId) return lead;
+      const updated: BuyerLead = {
+        ...lead,
+        tailoredAdCopy: editedLeadCopy.trim() || lead.tailoredAdCopy
+      };
+      if (lead.adType === 'video_ad' || lead.videoScript) {
+        updated.viralHook = editedLeadHook.trim() || lead.viralHook;
+        updated.videoScript = {
+          hook: editedLeadHook.trim() || (lead.videoScript?.hook || ''),
+          visualDirection: lead.videoScript?.visualDirection || '[Screen demo showing immediate result]',
+          voiceoverScript: editedLeadVoiceover.trim() || (lead.videoScript?.voiceoverScript || editedLeadCopy),
+          caption: lead.videoScript?.caption || editedLeadCopy
+        };
+      }
+      return updated;
+    });
+
+    const updatedOffer: Offer = {
+      ...offer,
+      buyer_leads: updatedLeads
+    };
+
+    if (onUpdateOffer) {
+      onUpdateOffer(updatedOffer);
+    }
+
+    setEditingLeadId(null);
+    setSaveSuccessId(leadId);
+    setTimeout(() => setSaveSuccessId(null), 2500);
   };
 
   if (offers.length === 0) {
@@ -201,6 +260,186 @@ export const OfferList: React.FC<OfferListProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {/* Placed Sites & Promotional Ad Copy (with Edit Capability) */}
+                  {(() => {
+                    const placedLeads = offer.buyer_leads && offer.buyer_leads.length > 0
+                      ? offer.buyer_leads
+                      : generateAutonomousBuyerLeads(offer.product_name, offer.product_description, offer.affiliate_id, offer.target_url || 'https://example.com');
+
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                          <div>
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Placed Sites &amp; Promotional Copy ({placedLeads.length} Outlets)</span>
+                            </h4>
+                            <p className="text-[11px] text-slate-400">
+                              Verify what the AI placed for each spot and edit any promotional copy directly.
+                            </p>
+                          </div>
+                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded border border-emerald-800/40">
+                            ● Placed &amp; Active
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          {placedLeads.map((lead) => {
+                            const isEditing = editingLeadId === lead.id;
+                            const isSaved = saveSuccessId === lead.id;
+
+                            return (
+                              <div
+                                key={lead.id}
+                                className="bg-[#060913] p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition space-y-2.5"
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800/70">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                                      {lead.platform}
+                                    </span>
+                                    <span className="text-xs text-slate-300 font-medium">
+                                      {lead.communityName}
+                                    </span>
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+                                      ● Placed
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                                    {lead.threadUrl && (
+                                      <a
+                                        href={lead.threadUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 font-semibold"
+                                      >
+                                        <ExternalLink className="w-3 h-3" />
+                                        <span>Inspect Site</span>
+                                      </a>
+                                    )}
+
+                                    <button
+                                      onClick={() => handleCopy(lead.tailoredAdCopy, `lead-${lead.id}`)}
+                                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-300 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                                    >
+                                      {copiedKey === `lead-${lead.id}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                                      <span>{copiedKey === `lead-${lead.id}` ? 'Copied!' : 'Copy Ad'}</span>
+                                    </button>
+
+                                    {!isEditing && (
+                                      <button
+                                        onClick={() => handleStartEditLead(lead)}
+                                        className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-[11px] font-bold text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <Edit3 className="w-3 h-3 text-emerald-400" />
+                                        <span>Edit Copy</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Target Thread */}
+                                <div className="text-xs text-slate-300">
+                                  <span className="text-slate-500 block text-[10px] uppercase font-mono font-bold">Target Discussion:</span>
+                                  <strong className="text-white">"{lead.threadTitle}"</strong>
+                                </div>
+
+                                {/* Placed Ad Body or Editor */}
+                                {isEditing ? (
+                                  <div className="bg-[#0f172a] p-3.5 rounded-xl border border-emerald-500/50 space-y-2.5">
+                                    {(lead.adType === 'video_ad' || lead.videoScript) && (
+                                      <div className="space-y-2">
+                                        <div>
+                                          <label className="block text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">
+                                            ⚡ 3-Second Viral Hook:
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={editedLeadHook}
+                                            onChange={(e) => setEditedLeadHook(e.target.value)}
+                                            className="w-full px-3 py-1.5 bg-slate-900 border border-purple-500/50 rounded-lg text-xs text-white focus:outline-none focus:border-purple-400"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                                            🎙️ Spoken Voiceover Script:
+                                          </label>
+                                          <textarea
+                                            rows={2}
+                                            value={editedLeadVoiceover}
+                                            onChange={(e) => setEditedLeadVoiceover(e.target.value)}
+                                            className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    <div>
+                                      <label className="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                                        Promotional Ad Copy (with link embedded):
+                                      </label>
+                                      <textarea
+                                        rows={3}
+                                        value={editedLeadCopy}
+                                        onChange={(e) => setEditedLeadCopy(e.target.value)}
+                                        className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white font-sans focus:outline-none focus:border-emerald-500 leading-relaxed"
+                                      />
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800">
+                                      <button
+                                        onClick={() => setEditingLeadId(null)}
+                                        className="px-2.5 py-1 text-xs text-slate-400 hover:text-white font-bold cursor-pointer transition"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => handleSaveLeadEdit(offer, lead.id)}
+                                        className="px-3.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-lg transition flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <Save className="w-3 h-3 text-slate-950" />
+                                        <span>Save Copy</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    {lead.adType === 'video_ad' || lead.videoScript ? (
+                                      <div className="bg-[#0f172a] p-3 rounded-lg border border-purple-500/30 text-xs space-y-2">
+                                        <div className="text-[11px] text-purple-300 font-bold flex items-center gap-1">
+                                          <Flame className="w-3.5 h-3.5 text-purple-400" />
+                                          <span>Hook: "{lead.videoScript?.hook || lead.viralHook}"</span>
+                                        </div>
+                                        <p className="text-slate-300 text-xs leading-relaxed">
+                                          {lead.videoScript?.voiceoverScript || lead.tailoredAdCopy}
+                                        </p>
+                                        <div className="text-[11px] font-mono text-emerald-400">
+                                          Caption: {lead.videoScript?.caption || lead.tailoredAdCopy}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="bg-[#0f172a] p-3 rounded-lg border border-slate-800 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">
+                                        {lead.tailoredAdCopy}
+                                      </div>
+                                    )}
+
+                                    {isSaved && (
+                                      <div className="mt-1.5 p-1.5 rounded bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30 flex items-center gap-1">
+                                        <Check className="w-3 h-3 text-emerald-400" />
+                                        <span>Promotional copy saved!</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Micro Search Tools Section */}
                   <div>

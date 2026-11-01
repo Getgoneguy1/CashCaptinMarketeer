@@ -299,3 +299,69 @@ export function activateLicenseKey(inputKey: string, userEmail?: string): {
     message: 'Invalid license key. Please check the key provided in your PayPal confirmation or contact support.'
   };
 }
+
+/**
+ * Checks whether user has already purchased a paid license to Cash Captain.
+ * Licensed users receive 50% VIP discount on AI Hub & AI Assistant add-ons.
+ */
+export function isCashCaptainLicenseHolder(userLicense?: UserLicenseState, isMasterUser?: boolean): boolean {
+  if (isMasterUser) return true;
+  const lic = userLicense || getUserLicense();
+  if (lic.tier === 'pro' || lic.tier === 'lifetime' || lic.tier === 'master_developer') {
+    return true;
+  }
+  if (lic.licenseKey && lic.licenseKey.trim().length > 0) {
+    return true;
+  }
+  if (lic.activatedAt) {
+    return true;
+  }
+  return false;
+}
+
+export interface AddonAppState {
+  isSubscribed: boolean;
+  isSignedIn: boolean;
+  userEmail?: string;
+  isLinked: boolean;
+  licenseKey?: string;
+  activatedAt?: string;
+}
+
+const ADDON_STORAGE_PREFIX = 'cashcaptain_addon_';
+
+export function getAddonAppState(appId: 'hub' | 'viral', isMasterUser?: boolean): AddonAppState {
+  if (isMasterUser) {
+    return {
+      isSubscribed: true,
+      isSignedIn: true,
+      userEmail: 'yeahwegotthat@proton.me',
+      isLinked: true,
+      licenseKey: 'MASTER-SUITE-UNLOCKED',
+      activatedAt: new Date().toISOString()
+    };
+  }
+
+  try {
+    const raw = localStorage.getItem(`${ADDON_STORAGE_PREFIX}${appId}`);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (e) {
+    console.error(`Failed to load ${appId} state`, e);
+  }
+
+  return {
+    isSubscribed: false,
+    isSignedIn: false,
+    isLinked: false
+  };
+}
+
+export function saveAddonAppState(appId: 'hub' | 'viral', state: AddonAppState): void {
+  try {
+    localStorage.setItem(`${ADDON_STORAGE_PREFIX}${appId}`, JSON.stringify(state));
+  } catch (e) {
+    console.error(`Failed to save ${appId} state`, e);
+  }
+}

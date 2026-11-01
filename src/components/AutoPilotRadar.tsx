@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Offer, BuyerLead, AffiliateProConfig } from '../types';
-import { findBuyerLeads, getProductAdStrategy, getProductCorrelationProfile, CategoryAdStrategy } from '../services/aiGenerator';
+import { findBuyerLeads } from '../services/aiGenerator';
 import {
   Sparkles,
   Crosshair,
@@ -78,22 +78,13 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   const [autoPlacedCount, setAutoPlacedCount] = useState<number>(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [channelFilter, setChannelFilter] = useState<string>('all');
-  const [showStrategyDrawer, setShowStrategyDrawer] = useState<boolean>(false);
 
   // Auto-placement engine options
-  const [handsFreeMode, setHandsFreeMode] = useState<boolean>(true);
+  const [handsFreeMode, setHandsFreeMode] = useState<boolean>(false);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<string>('6h');
-
-  // Multi-Category Correlation & Context-Strict Ad Strategy
-  const correlationProfile = getProductCorrelationProfile(
-    productName || activeProductName || 'Product',
-    productDescription
-  );
-
-  const adStrategy: CategoryAdStrategy = getProductAdStrategy(
-    productName || activeProductName || 'Product',
-    productDescription
-  );
+  const [isPlaced, setIsPlaced] = useState<boolean>(false);
+  const [editingLeadId, setEditingLeadId] = useState<string | null>(null);
+  const [editedCopy, setEditedCopy] = useState<string>('');
 
   // Trigger automated placement sequence
   const executeAutonomousPlacement = async (leads: BuyerLead[], pName: string, tag: string, link: string) => {
@@ -151,6 +142,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
     setAutoPlacedCount(updatedLeads.length);
     setIsAutoPlacing(false);
     setPlacementProgress(null);
+    setIsPlaced(true);
 
     // Save with updated auto-placed status
     const newOffer: Offer = {
@@ -222,8 +214,9 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
       setScanStep('');
       setIsScanning(false);
+      setIsPlaced(false);
 
-      // If Hands-Free Mode is enabled (default), immediately auto-place across all targets
+      // If Hands-Free Mode is enabled, immediately place; otherwise show ads for review
       if (handsFreeMode) {
         await executeAutonomousPlacement(leadsToProcess, productName, tag, destination);
       } else {
@@ -438,7 +431,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
               </label>
               <input
                 type="text"
-                placeholder="Ty"
+                placeholder="e.g. AFF_TAG_01"
                 value={affiliateTag}
                 onChange={(e) => setAffiliateTag(e.target.value)}
                 className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner placeholder:text-slate-600"
@@ -573,7 +566,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
               ) : (
                 <>
                   <Zap className="w-4 h-4 text-slate-950" />
-                  <span>⚡ Auto-Place Link & Ads Across All Live Discussions</span>
+                  <span>⚡ Place Ads</span>
                 </>
               )}
             </button>
@@ -615,209 +608,68 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
         )}
       </div>
 
-      {/* Multi-Category Correlation & Context-Strict Ad Placement Blueprint */}
-      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{adStrategy.categoryIcon}</span>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono uppercase text-emerald-400 font-bold tracking-wider">AI Category Fit:</span>
-                <span className="text-sm font-black text-white">{adStrategy.categoryTitle}</span>
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Primary Domain Fit
-                </span>
-                {correlationProfile.correlatedCategories.length > 0 && (
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
-                    <Layers className="w-3 h-3 text-emerald-400" />
-                    Correlates with {correlationProfile.allCategories.length} Site Types
-                  </span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                {correlationProfile.correlatedCategories.length > 0
-                  ? 'Autonomous routing detects multi-style correlations—placing ads across all relevant marketplaces while strictly filtering out incompatible platforms.'
-                  : 'Product links are strictly routed to outlets where this product naturally converts—never placed on incompatible platforms.'}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowStrategyDrawer((prev) => !prev)}
-            className="text-xs text-slate-200 hover:text-white flex items-center gap-1.5 font-bold cursor-pointer shrink-0 self-start sm:self-auto bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition"
-          >
-            <Layers className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{showStrategyDrawer ? 'Hide Multi-Channel Blueprint' : 'View Correlated Outlets & Tactics'}</span>
-          </button>
-        </div>
-
-        {/* Multi-Category Correlation Breakdown Badges */}
-        {correlationProfile.correlatedCategories.length > 0 && (
-          <div className="bg-[#0f172a]/90 p-3 rounded-xl border border-purple-500/30 space-y-2">
-            <div className="flex items-center justify-between text-xs text-purple-300 font-bold">
-              <span className="flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
-                Cross-Channel Placement Correlation:
-              </span>
-              <span className="text-[11px] font-mono text-slate-400 font-normal">
-                Fits multiple site styles and buyer personas
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-              {correlationProfile.breakdowns.map((item) => (
-                <div
-                  key={item.categoryId}
-                  className={`p-2.5 rounded-lg border ${
-                    item.isPrimary
-                      ? 'bg-blue-950/40 border-blue-500/40'
-                      : 'bg-slate-900/80 border-slate-700/80'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-1.5 mb-1">
-                    <span className="font-bold text-white flex items-center gap-1.5">
-                      <span>{item.categoryIcon}</span>
-                      <span className="truncate">{item.categoryTitle}</span>
-                    </span>
-                    <span
-                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold uppercase ${
-                        item.isPrimary
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                      }`}
-                    >
-                      {item.isPrimary ? 'Primary' : 'Correlated'}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-300 line-clamp-2">{item.correlationReason}</p>
-                  <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-                    <span className="text-amber-300 font-semibold truncate">
-                      {item.topMarketplaces}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Top Channels Overview Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-          <div className="bg-[#0f172a] p-2.5 rounded-xl border border-slate-700/80">
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Top Primary Ad Engine</span>
-            <span className="text-emerald-400 font-bold flex items-center gap-1.5 mt-0.5">
-              <Target className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              {adStrategy.primaryAdChannel}
-            </span>
-          </div>
-
-          <div className="bg-[#0f172a] p-2.5 rounded-xl border border-slate-700/80">
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">
-              {correlationProfile.correlatedCategories.length > 0 ? 'Secondary & Cross-Channel Ads' : 'Best Secondary Ad Channel'}
-            </span>
-            <span className="text-sky-400 font-bold flex items-center gap-1.5 mt-0.5">
-              <Zap className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-              {adStrategy.secondaryAdChannel}
-            </span>
-          </div>
-
-          <div className="bg-[#0f172a] p-2.5 rounded-xl border border-slate-700/80">
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Primary Marketplaces to Place On</span>
-            <span className="text-amber-300 font-bold flex items-center gap-1.5 mt-0.5">
-              <ShoppingBag className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              {adStrategy.topMarketplaces}
-            </span>
-          </div>
-        </div>
-
-        {/* Non-Contamination Exclusions Safeguard */}
-        {correlationProfile.excludedChannels.length > 0 && (
-          <div className="bg-red-950/20 border border-red-500/25 p-2.5 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2 shrink-0">
-              <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
-              <span className="text-[11px] font-bold text-red-300">
-                Zero-Slop Guardrail (Strictly Blocked Irrelevant Platforms):
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {correlationProfile.excludedChannels.map((ch) => (
-                <span
-                  key={ch}
-                  className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900/90 text-slate-300 border border-red-500/30 line-through"
-                  title="Excluded to prevent audience mismatch"
-                >
-                  {ch}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Expandable Ad Strategy & Multi-Channel Tactics Drawer */}
-        {showStrategyDrawer && (
-          <div className="mt-2 pt-2.5 border-t border-slate-800 space-y-3 animate-fadeIn">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-200">
-                Recommended Cross-Platform Tactics & Targeting:
-              </span>
-              <span className="text-[10px] font-mono text-emerald-400">
-                {correlationProfile.combinedAdSummary}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              {adStrategy.networks.map((net) => (
-                <div key={net.name} className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">{net.name}</span>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">
-                      {net.placementType}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-300">{net.targetingStrategy}</p>
-                  <p className="text-[10px] text-emerald-400"><strong>Best For:</strong> {net.bestFor}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-
       {/* Live Active Placements Overview */}
       {discoveredLeads.length > 0 && (
         <div className="space-y-4">
-          <div className="bg-[#0c1222] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              {imagePreview ? (
-                <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-emerald-500/60 shadow shrink-0 bg-slate-900">
-                  <img src={imagePreview} alt={activeProductName} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shrink-0">
-                  <Activity className="w-5 h-5" />
-                </div>
-              )}
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>Placements Live & Active: {discoveredLeads.length} Channels</span>
-                  <span className="text-[11px] font-mono bg-emerald-950/70 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800">
-                    Auto-Placed
+          {!isPlaced ? (
+            <div className="bg-gradient-to-r from-blue-950/70 via-slate-900 to-emerald-950/70 p-5 rounded-2xl border border-blue-500/50 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-blue-400 shrink-0" />
+                  <h3 className="text-base font-black text-white">
+                    Review Your Ads &amp; Viral Hooks ({discoveredLeads.length} Generated)
+                  </h3>
+                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30">
+                    Review Before Placing
                   </span>
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Target Offer: <strong className="text-white">{activeProductName}</strong> &bull; Link: <code className="text-emerald-400 font-mono">{targetUrl}</code>
+                </div>
+                <p className="text-xs text-slate-300 max-w-xl">
+                  The AI formulated the highest-converting ad copy, viral hooks, and automatic video scripts for <strong className="text-white">{activeProductName}</strong>. Review below and approve to place.
                 </p>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <div className="bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300 font-mono">
-                Auto-Cycle: <strong className="text-emerald-400">Every 6 Hours</strong>
+              <button
+                type="button"
+                onClick={() => executeAutonomousPlacement(discoveredLeads, activeProductName || productName, affiliateTag, targetUrl)}
+                disabled={isAutoPlacing}
+                className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap self-start sm:self-auto"
+              >
+                <Zap className="w-4 h-4 text-slate-950" />
+                <span>Approve &amp; Place All Ads Now &rarr;</span>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-[#0c1222] p-5 rounded-2xl border border-emerald-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {imagePreview ? (
+                  <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-emerald-500/60 shadow shrink-0 bg-slate-900">
+                    <img src={imagePreview} alt={activeProductName} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <span>We placed your product on these sites ({discoveredLeads.length} Total):</span>
+                    <span className="text-[11px] font-mono bg-emerald-950/70 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800">
+                      Live &amp; Active
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-300">
+                    Target Product: <strong className="text-white">{activeProductName}</strong> &bull; Link: <code className="text-emerald-400 font-mono">{targetUrl}</code>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <div className="bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300 font-mono">
+                  Status: <strong className="text-emerald-400">All Placed &amp; Live</strong>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Channel Filter Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs">
@@ -979,22 +831,122 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                       <strong className="text-slate-300">Target Problem / Demand:</strong> {lead.buyerPainPoint}
                     </div>
 
-                    {/* Contextual Auto-Placed Ad */}
-                    <div className="bg-[#0f172a] p-3.5 rounded-lg border border-[#334155] space-y-2">
-                      <div className="flex items-center justify-between text-xs text-emerald-400 font-semibold">
-                        <span className="flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          Live Placed Ad Response
-                        </span>
-                        <span className="text-[11px] font-mono text-sky-300">
-                          Link: {targetUrl}
-                        </span>
-                      </div>
+                    {/* Ad Content: Video Ad vs Discussion Copy */}
+                    {lead.adType === 'video_ad' || lead.videoScript ? (
+                      <div className="bg-[#0f172a] p-4 rounded-xl border border-purple-500/40 space-y-3">
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                          <span className="flex items-center gap-1.5 text-purple-400 font-bold">
+                            <Flame className="w-4 h-4 text-purple-400" />
+                            <span>Viral Video Ad (Automatic Script &amp; Hooks)</span>
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
+                            TikTok / Shorts / Reels
+                          </span>
+                        </div>
 
-                      <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">
-                        {lead.tailoredAdCopy}
-                      </p>
-                    </div>
+                        {/* Viral Hook */}
+                        <div className="bg-purple-950/40 p-3 rounded-lg border border-purple-500/30 text-xs space-y-1">
+                          <span className="text-[10px] font-mono uppercase text-purple-300 font-bold block">
+                            ⚡ 3-Second Scroll-Stopping Hook:
+                          </span>
+                          <p className="text-white font-bold text-sm">
+                            "{lead.videoScript?.hook || lead.viralHook || `Stop scrolling if you need ${activeProductName}!`}"
+                          </p>
+                        </div>
+
+                        {/* Visual & Voiceover breakdown */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 space-y-1">
+                            <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                              🎬 Scene Direction:
+                            </span>
+                            <p className="text-slate-300 text-[11px]">
+                              {lead.videoScript?.visualDirection || '[Screen recording showing fast result. Cut to product page with dynamic music.]'}
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 space-y-1">
+                            <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                              🎙️ Voiceover Script:
+                            </span>
+                            <p className="text-slate-300 text-[11px]">
+                              {lead.videoScript?.voiceoverScript || lead.tailoredAdCopy}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Post Caption with Link */}
+                        <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-xs space-y-1">
+                          <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold block">
+                            🔗 Post Caption &amp; Embedded Link:
+                          </span>
+                          <p className="text-slate-200 text-xs font-mono">
+                            {lead.videoScript?.caption || lead.tailoredAdCopy}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Standard Discussion / Marketplace Ad */
+                      <div className="bg-[#0f172a] p-3.5 rounded-lg border border-[#334155] space-y-2">
+                        <div className="flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                          <span className="flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>{isPlaced ? 'Live Placed Ad Response' : 'Generated Ad Copy (Ready to Place)'}</span>
+                          </span>
+                          <span className="text-[11px] font-mono text-emerald-300">
+                            Link: {targetUrl}
+                          </span>
+                        </div>
+
+                        {editingLeadId === lead.id ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={editedCopy}
+                              onChange={(e) => setEditedCopy(e.target.value)}
+                              rows={3}
+                              className="w-full p-2 bg-slate-900 border border-emerald-500 rounded-lg text-xs text-white font-sans focus:outline-none"
+                            />
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => setEditingLeadId(null)}
+                                className="px-2.5 py-1 text-xs text-slate-400 hover:text-white"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const updated = discoveredLeads.map((l) =>
+                                    l.id === lead.id ? { ...l, tailoredAdCopy: editedCopy } : l
+                                  );
+                                  setDiscoveredLeads(updated);
+                                  setEditingLeadId(null);
+                                }}
+                                className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold rounded"
+                              >
+                                Save Copy
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">
+                              {lead.tailoredAdCopy}
+                            </p>
+                            {!isPlaced && (
+                              <button
+                                onClick={() => {
+                                  setEditingLeadId(lead.id);
+                                  setEditedCopy(lead.tailoredAdCopy);
+                                }}
+                                className="text-[11px] text-emerald-400 hover:underline mt-1.5 flex items-center gap-1 cursor-pointer font-bold"
+                              >
+                                <span>✎ Edit Ad Copy</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1033,6 +985,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
           })()}
         </div>
       )}
+
     </div>
   );
 };
