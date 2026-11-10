@@ -17,7 +17,7 @@ import { MasterAuthSession } from '../types';
 import { AppUserProfile } from '../services/userAuthService';
 import { CashCaptainLogo } from './CashCaptainLogo';
 
-export type NavTab = 'autopilot' | 'offers' | 'copy' | 'hubs' | 'social' | 'affiliate_pro' | 'ledger' | 'partner' | 'utilities' | 'sales';
+export type NavTab = 'autopilot' | 'offers' | 'copy' | 'hubs' | 'social' | 'email' | 'affiliate_pro' | 'ledger' | 'partner' | 'utilities' | 'sales';
 
 interface HeaderProps {
   activeTab: NavTab;
@@ -27,8 +27,8 @@ interface HeaderProps {
   isBuilding: boolean;
   onRebuild: () => void;
   onOpenBulkAdd: () => void;
-  onOpenEmailModal: () => void;
-  onOpenSocialBlast: () => void;
+  onOpenEmailModal?: () => void;
+  onOpenSocialBlast?: () => void;
   onOpenFirebaseGuide: () => void;
   onOpenUserGuide: () => void;
   affiliateProEnabled: boolean;
@@ -208,48 +208,16 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* Email Alerts */}
-            <button
-              onClick={onOpenEmailModal}
-              className="px-3 py-2 rounded-lg font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-slate-600 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="Configure Email Reports and Sales Alerts"
-            >
-              <Mail className="w-3.5 h-3.5 text-slate-400" />
-              <span>Email Alerts</span>
-            </button>
-
-            {/* Social Media Blast */}
-            <button
-              onClick={() => setActiveTab('social')}
-              className="px-3 py-2 rounded-lg font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-emerald-500/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="Syndicate Advertisements across Social Platforms"
-            >
-              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Social Blast</span>
-            </button>
-
-            {/* Customer License / Upgrade Button */}
+            {/* Purchase App License / Key Activation */}
             <button
               onClick={onOpenLicenseModal}
-              className={`px-3.5 py-2 rounded-lg font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-md ${
-                masterSession.isMasterLoggedIn
-                  ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 ring-1 ring-amber-200 shadow-amber-400/20'
-                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 ring-1 ring-emerald-300 shadow-emerald-500/20'
-              }`}
-              title="Manage License Slots, Activate Key, or Upgrade"
+              className="px-3.5 py-2 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20"
+              title="Purchase App License or Activate Campaign Key"
             >
-              {masterSession.isMasterLoggedIn ? (
-                <>
-                  <Crown className="w-3.5 h-3.5 text-slate-950" />
-                  <span>👑 Master Account ($0)</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5 text-slate-950" />
-                  <span>Buy License</span>
-                </>
-              )}
+              <KeyRound className="w-3.5 h-3.5 text-slate-950" />
+              <span>Buy License</span>
             </button>
+
           </div>
         </div>
 
@@ -303,6 +271,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Share2 className="w-4 h-4 text-emerald-400" />
             <span>📢 Social Blast Hub</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('email')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'email'
+                ? 'bg-slate-700 text-emerald-300 font-extrabold border border-emerald-500/40 shadow'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
+          >
+            <Mail className="w-4 h-4 text-emerald-400" />
+            <span>📬 Email Updates</span>
           </button>
 
           <button

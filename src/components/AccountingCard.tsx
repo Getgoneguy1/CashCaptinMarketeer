@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TrackingMetrics, Offer } from '../types';
-import { MousePointerClick, DollarSign, Target, Percent, ArrowUpRight, Check, TrendingUp } from 'lucide-react';
+import { MousePointerClick, DollarSign, Target, Percent, ArrowUpRight, Check, TrendingUp, RotateCw } from 'lucide-react';
 
 interface AccountingCardProps {
   tracking: TrackingMetrics;
@@ -16,6 +16,23 @@ export const AccountingCard: React.FC<AccountingCardProps> = ({
   const [conversionsInput, setConversionsInput] = useState<string>(tracking.conversions.toString());
   const [revenueInput, setRevenueInput] = useState<string>(tracking.revenue.toFixed(2));
   const [savedFeedback, setSavedFeedback] = useState<boolean>(false);
+  const [isTrackerLive, setIsTrackerLive] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  const handleToggleOrRefresh = () => {
+    setIsRefreshing(true);
+    try {
+      const stored = localStorage.getItem('cashcaptin_tracking');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        onUpdateMetrics(parsed.conversions || 0, parsed.revenue || 0);
+      }
+    } catch {}
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setIsTrackerLive(true);
+    }, 500);
+  };
 
   const handleSaveAccounting = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,13 +60,36 @@ export const AccountingCard: React.FC<AccountingCardProps> = ({
             <span>Campaign Performance &amp; Revenue Ledger</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Real-time click monitoring, affiliate conversion tracking, and commission earnings.
+            Monitor real-time campaign traffic, verified affiliate conversions, and commission earnings.
           </p>
         </div>
+
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-emerald-400 bg-[#060913] px-3 py-1 rounded-xl border border-emerald-500/30 font-bold">
-            Live Tracker Active
-          </span>
+          {isTrackerLive ? (
+            <button
+              type="button"
+              onClick={() => setIsTrackerLive(false)}
+              title="Live tracker active. Click to test update/refresh."
+              className="px-3.5 py-1.5 rounded-xl bg-[#060913] border border-emerald-500/40 flex items-center gap-2 cursor-pointer hover:border-emerald-500/70 transition shadow-sm"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#39ff14] animate-pulse"></span>
+              <span className="text-xs font-mono font-bold text-emerald-400">
+                Status: Live
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleToggleOrRefresh}
+              title="Click to update and refresh tracker"
+              className="px-3.5 py-1.5 rounded-xl bg-red-950/40 border border-red-500/50 flex items-center gap-2 cursor-pointer hover:bg-red-950/70 transition shadow-sm animate-pulse"
+            >
+              <RotateCw className={`w-3.5 h-3.5 text-red-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="text-xs font-mono font-bold text-red-400">
+                {isRefreshing ? 'Updating...' : 'Status: Update or Refresh'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -60,7 +100,7 @@ export const AccountingCard: React.FC<AccountingCardProps> = ({
             <MousePointerClick className="w-4 h-4" />
           </div>
           <h3 className="text-2xl font-black text-white tracking-tight">{tracking.clicks}</h3>
-          <p className="text-xs text-slate-400 uppercase font-semibold mt-0.5">Real Clicks</p>
+          <p className="text-xs text-slate-400 uppercase font-semibold mt-0.5">Clicks</p>
         </div>
 
         <div className="bg-[#060913] p-4 rounded-xl border border-slate-800 text-center shadow-sm">
@@ -103,7 +143,7 @@ export const AccountingCard: React.FC<AccountingCardProps> = ({
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <span>Update Affiliate Payouts &amp; Commission Ledger</span>
+            <span>Affiliate Payouts &amp; Commission Ledger</span>
           </h4>
           <span className="text-[11px] text-slate-400">
             Active Offers: {offers.length}

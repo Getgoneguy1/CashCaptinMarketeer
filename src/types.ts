@@ -109,6 +109,8 @@ export interface BuyerLead {
     voiceoverScript: string;
     caption: string;
   };
+  videoUrl?: string;
+  videoFilename?: string;
 }
 
 export interface Offer {
@@ -119,6 +121,8 @@ export interface Offer {
   category?: string;
   target_url?: string;
   image_url?: string;
+  video_url?: string;
+  video_filename?: string;
   keywords?: string[];
   platform_copy?: PlatformCopy;
   buyer_leads?: BuyerLead[];

@@ -33,7 +33,11 @@ import {
   Upload,
   X,
   Lock,
-  Crown
+  Crown,
+  Video,
+  Play,
+  FileVideo,
+  Link2
 } from 'lucide-react';
 import {
   canDeployNewOffer,
@@ -64,9 +68,17 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   // Clean input form state ready for user's own affiliate offers
   const [productName, setProductName] = useState('');
   const [productDescription, setProductDescription] = useState('');
-  const [affiliateTag, setAffiliateTag] = useState('');
+  const [productHashtags, setProductHashtags] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [videoFileName, setVideoFileName] = useState<string | null>(null);
+  const [vidofyAffiliateUrl, setVidofyAffiliateUrl] = useState<string>(() => {
+    return localStorage.getItem('cashcaptain_vidofy_affiliate_url') || 'https://vidofy.ai/?aff=ty-birchfield-7200';
+  });
+  const [copiedVidofyScriptId, setCopiedVidofyScriptId] = useState<string | null>(null);
+  const [isEditingVidofyUrl, setIsEditingVidofyUrl] = useState<boolean>(false);
+  const [showBlueprintGuide, setShowBlueprintGuide] = useState<boolean>(false);
 
   // Autonomous state
   const [isScanning, setIsScanning] = useState(false);
@@ -101,14 +113,6 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
       // Simulate network dispatch delay for realistic auto-posting
       await new Promise((r) => setTimeout(r, 600));
-
-      // Record placement impression in analytics
-      onRecordClick(
-        `auto-${lead.id}`,
-        pName,
-        tag || 'AFF_TAG_01',
-        link
-      );
 
       // Ping Affiliate Pro webhook if configured
       if (affiliateProConfig.enabled && affiliateProConfig.webhookUrl) {
@@ -149,12 +153,14 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
       id: `offer-${Date.now()}`,
       product_name: pName,
       product_description: productDescription || `${pName} solution`,
-      affiliate_id: tag,
+      affiliate_id: tag.trim() || pName.toLowerCase().replace(/[^a-z0-9]/g, '-'),
       target_url: link,
       image_url: imagePreview || undefined,
+      video_url: videoPreview || undefined,
+      video_filename: videoFileName || undefined,
       buyer_leads: updatedLeads,
       created_at: new Date().toISOString(),
-      clicks: updatedLeads.length,
+      clicks: 0,
       conversions: 0,
       revenue: 0
     };
@@ -170,47 +176,34 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
     e.preventDefault();
     if (!productName.trim()) return;
 
-    // Check slot quota before launching
-    const quota = canDeployNewOffer(!!isMasterUser);
-    if (!quota.allowed) {
-      if (onOpenLicenseModal) {
-        onOpenLicenseModal();
-      }
-      return;
-    }
-
     setIsScanning(true);
     setActiveProductName(productName);
     setDiscoveredLeads([]);
 
-    const tag = affiliateTag.trim() || 'AFF_TAG_01';
-    const destination = targetUrl.trim() || 'https://example.com/affiliate-link';
+    const tag = productHashtags.trim();
+    const destination = targetUrl.trim() || 'https://example.com/product';
 
     try {
-      setScanStep('🔍 [1/4] Broadening web scrape across Want Ads (Marketplace/Craigslist ISO) & buyer inquiries...');
+      setScanStep(`🔍 [1/4] Scraping web for active buyers searching for "${productName}"...`);
       await new Promise((r) => setTimeout(r, 550));
 
-      setScanStep('⚖️ [2/4] Cross-referencing comparison debates, review intercept boards & Gumroad discover...');
+      setScanStep('🎯 [2/4] Ranking buyer placement locations by Highest Likelihood of a Sale (99% - 94%)...');
       await new Promise((r) => setTimeout(r, 550));
 
-      setScanStep('📈 [3/4] Scanning Google Daily Search Trends, Amazon Movers & Pinterest/LinkedIn/IG buyers...');
+      setScanStep('💡 [3/4] Determining optimal ad type (Viral Video, Community Reply, Social Hook, Comparison)...');
       await new Promise((r) => setTimeout(r, 600));
 
-      setScanStep('✍️ [4/4] Formulating tailored contextual replies with your referral link embedded...');
+      setScanStep('✍️ [4/4] Writing highest-converting ad copy & producing viral video script...');
 
       const leads = await findBuyerLeads(
         productName,
         productDescription || `${productName} solution`,
-        tag,
+        tag || productName,
         destination,
         imagePreview || undefined
       );
 
-      const userLic = getUserLicense();
-      const maxLeads = isMasterUser ? 999999 : userLic.maxLeadsPerProduct;
-      const leadsToProcess = (!isMasterUser && maxLeads && leads.length > maxLeads)
-        ? leads.slice(0, maxLeads)
-        : leads;
+      const leadsToProcess = leads;
 
       setScanStep('');
       setIsScanning(false);
@@ -231,18 +224,9 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
   // Handle Quick One-Click Switch
   const handleQuickRun = (name: string, desc: string, tag: string, link: string) => {
-    // Check slot quota before launching
-    const quota = canDeployNewOffer(!!isMasterUser);
-    if (!quota.allowed) {
-      if (onOpenLicenseModal) {
-        onOpenLicenseModal();
-      }
-      return;
-    }
-
     setProductName(name);
     setProductDescription(desc);
-    setAffiliateTag(tag);
+    setProductHashtags(tag);
     setTargetUrl(link);
     setActiveProductName(name);
 
@@ -251,16 +235,15 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
     setTimeout(async () => {
       try {
-        setScanStep('🌐 Broadening web scrape across Want Ads, Daily Trends & Buyer inquiries...');
+        setScanStep(`🔍 [1/4] Scraping web for active buyers for "${name}"...`);
+        await new Promise((r) => setTimeout(r, 450));
+        setScanStep('🎯 [2/4] Ranking buyer channels by Highest Likelihood of a Sale (99% - 94%)...');
+        await new Promise((r) => setTimeout(r, 450));
+        setScanStep('💡 [3/4] Determining optimal ad types & formulating high-converting ad copy/video scripts...');
         await new Promise((r) => setTimeout(r, 500));
-        setScanStep('⚡ Generating contextual replies with embedded link...');
 
         const leads = await findBuyerLeads(name, desc, tag, link);
-        const userLic = getUserLicense();
-        const maxLeads = isMasterUser ? 999999 : userLic.maxLeadsPerProduct;
-        const leadsToProcess = (!isMasterUser && maxLeads && leads.length > maxLeads)
-          ? leads.slice(0, maxLeads)
-          : leads;
+        const leadsToProcess = leads;
 
         setScanStep('');
         setIsScanning(false);
@@ -280,119 +263,63 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleLaunchVidofy = (lead: BuyerLead) => {
+    const fullScript = `PRODUCT: ${activeProductName || productName || 'My Product'}
+3-SECOND VIRAL HOOK:
+"${lead.videoScript?.hook || lead.viralHook || `Stop scrolling if you need ${activeProductName || productName}!`}"
+
+SCENE / VISUAL DIRECTION:
+${lead.videoScript?.visualDirection || '[Screen recording showing fast result. Cut to product page with dynamic music.]'}
+
+VOICEOVER SCRIPT:
+${lead.videoScript?.voiceoverScript || lead.tailoredAdCopy}
+
+POST CAPTION & CALL TO ACTION:
+${lead.videoScript?.caption || lead.tailoredAdCopy}
+AFFILIATE LINK: ${lead.affiliateDeepLink || targetUrl || 'https://example.com'}`;
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(fullScript);
+    }
+    setCopiedVidofyScriptId(lead.id);
+    setTimeout(() => setCopiedVidofyScriptId(null), 4000);
+
+    window.open(vidofyAffiliateUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleSaveVidofyUrl = (newUrl: string) => {
+    const cleaned = newUrl.trim() || 'https://vidofy.ai/?aff=ty-birchfield-7200';
+    setVidofyAffiliateUrl(cleaned);
+    localStorage.setItem('cashcaptain_vidofy_affiliate_url', cleaned);
+    setIsEditingVidofyUrl(false);
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Hero Header */}
-      <div className="bg-[#0c1222] p-6 rounded-2xl border border-slate-800 shadow-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-800/80">
+      <div className="bg-[#0c1222] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-              <Zap className="w-6 h-6 animate-pulse" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+              <Zap className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                  100% Hands-Free Auto-Placement & Broadened Web Scrape
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/30 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  Active & Auto-Posting
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-400">
-                Broadened web scrape monitors Want Ads (Marketplace/Craigslist ISO), Daily Search Trends, Comparison Sites, Review Sites, Gumroad, Pinterest, LinkedIn, Instagram, and Communities for any product.
+              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                AI Buyer Discovery &amp; Ad Placement
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Scrapes the web for active buyers wanting your specific product or service, ranks placements by highest likelihood of a sale, and crafts tailored video scripts and ads — you can sell anything with this.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-slate-200">Autonomous Mode:</span>
-            <span className="text-xs font-mono text-emerald-400 font-bold">ENABLED</span>
+          <div className="flex items-center gap-2 bg-[#060913] px-3.5 py-1.5 rounded-xl border border-emerald-500/30 shrink-0 self-start sm:self-auto shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-xs font-mono font-bold text-emerald-300">
+              Works with Any Product or Service • Sell Anything With This
+            </span>
           </div>
         </div>
-
-        {/* Clean Ready Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#060913] p-3.5 rounded-xl border border-slate-800 mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="text-xs text-white font-bold">100% Ready for Any Product:</span>
-            <span className="text-xs text-slate-400">Physical goods (gold paydirt, gear), SaaS, tools, or local services — the engine finds buyers wanting to buy.</span>
-          </div>
-
-          {onOpenEmailModal && (
-            <button
-              type="button"
-              onClick={onOpenEmailModal}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0"
-              title="Configure your automated weekly dashboard briefings & sale alerts"
-            >
-              <Mail className="w-3.5 h-3.5 text-emerald-400" />
-              <span>📬 Weekly Email Briefing & Sales Alerts</span>
-            </button>
-          )}
-        </div>
-
-        {/* Campaign Slots & Tier Status Bar */}
-        {(() => {
-          const userLic = getUserLicense();
-          const quota = canDeployNewOffer(!!isMasterUser);
-
-          return (
-            <div className="mb-4 space-y-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#060913] p-3 rounded-xl border border-slate-800 text-xs">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-slate-300">Campaign Slot Quota:</span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
-                    {isMasterUser ? 'Master Developer (Unlimited Slots)' : `${quota.consumedCount} / ${quota.totalAllowed} Slots Deployed`}
-                  </span>
-                  {!isMasterUser && userLic.tier === 'starter' && (
-                    <span className="text-slate-400 text-[11px]">
-                      • Starter Tier (Top 5 Buyer Leads / 2 Channels per Product)
-                    </span>
-                  )}
-                  {(!isMasterUser && (userLic.tier === 'pro' || userLic.tier === 'lifetime')) && (
-                    <span className="text-emerald-400 text-[11px] font-semibold">
-                      • Full 38+ Buyer Channels Active
-                    </span>
-                  )}
-                </div>
-
-                {onOpenLicenseModal && !isMasterUser && userLic.tier !== 'lifetime' && (
-                  <button
-                    type="button"
-                    onClick={onOpenLicenseModal}
-                    className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg font-bold text-[11px] transition flex items-center gap-1 cursor-pointer shrink-0 self-start sm:self-auto"
-                  >
-                    <Crown className="w-3 h-3 text-emerald-400" />
-                    <span>Upgrade Slots</span>
-                  </button>
-                )}
-              </div>
-
-              {!quota.allowed && !isMasterUser && (
-                <div className="bg-red-950/40 border border-red-500/50 p-3.5 rounded-xl text-xs text-red-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-white block">All {quota.totalAllowed} Campaign Slots Consumed:</strong>
-                      <span>Each deployed product permanently occupies a slot to maintain live auto-placement on buyer search nodes. To deploy additional products, upgrade your license.</span>
-                    </div>
-                  </div>
-                  {onOpenLicenseModal && (
-                    <button
-                      type="button"
-                      onClick={onOpenLicenseModal}
-                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-lg transition-all shrink-0 cursor-pointer shadow-md"
-                    >
-                      Unlock 15 Slots (Captain Pro)
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })()}
 
         {/* Input Form */}
         <form onSubmit={handleLaunchAutoPilot} className="space-y-4">
@@ -413,12 +340,12 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
             <div className="md:col-span-4">
               <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                Your Affiliate Link *
+                Your Product or Affiliate Link *
               </label>
               <input
                 type="url"
                 required
-                placeholder="https://your-affiliate-link.com/?aff=..."
+                placeholder="https://your-product-link.com"
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
                 className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-emerald-400 font-bold placeholder:text-slate-600"
@@ -427,14 +354,14 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
             <div className="md:col-span-3">
               <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                Affiliate Tag (Optional)
+                Product Hashtags / Keywords (Optional)
               </label>
               <input
                 type="text"
-                placeholder="e.g. AFF_TAG_01"
-                value={affiliateTag}
-                onChange={(e) => setAffiliateTag(e.target.value)}
-                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner placeholder:text-slate-600"
+                placeholder="e.g. #marketing #ai #deals"
+                value={productHashtags}
+                onChange={(e) => setProductHashtags(e.target.value)}
+                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-sky-400 placeholder:text-slate-600"
               />
             </div>
           </div>
@@ -527,8 +454,135 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
             </div>
           </div>
 
+          {/* Video Asset Upload Area (Optional) */}
+          <div className="p-3.5 rounded-xl bg-[#0f172a] border border-[#334155] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
+                <Video className="w-3.5 h-3.5 text-purple-400" />
+                <span>Upload Finished Video Asset (Optional .mp4, .mov, .webm)</span>
+              </label>
+              {videoPreview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVideoPreview(null);
+                    setVideoFileName(null);
+                  }}
+                  className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer transition"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Remove Video
+                </button>
+              )}
+            </div>
 
-          {/* Action Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+              <div className={videoPreview ? 'sm:col-span-8 space-y-2' : 'sm:col-span-12 space-y-2'}>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <label className="px-3.5 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                    <Upload className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Choose Video File</span>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setVideoFileName(file.name);
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            if (typeof reader.result === 'string') {
+                              setVideoPreview(reader.result);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {videoFileName && (
+                    <div className="flex items-center px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300 truncate">
+                      <FileVideo className="w-3.5 h-3.5 text-purple-400 mr-1.5 shrink-0" />
+                      <span className="truncate">{videoFileName}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  If you already have a video for this product (e.g. from Vidofy or your camera), upload it here. The AI attaches it to all short-form video ad placements (TikTok, Shorts, Reels).
+                </p>
+              </div>
+
+              {videoPreview && (
+                <div className="sm:col-span-4 flex items-center justify-center">
+                  <div className="w-full rounded-xl overflow-hidden border border-purple-500/40 bg-black">
+                    <video src={videoPreview} controls className="w-full max-h-28 object-contain" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Vidofy Video Maker Partner Bar */}
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-purple-500/15 text-purple-400 shrink-0">
+                <Play className="w-3.5 h-3.5" />
+              </span>
+              <div>
+                <span className="font-bold text-white">Vidofy AI Video Maker: </span>
+                <span className="text-slate-400">Renders 15-30s videos from your AI blueprint. </span>
+                <a
+                  href={vidofyAffiliateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-400 hover:text-purple-300 underline font-mono text-[11px] inline-flex items-center gap-0.5 ml-1"
+                >
+                  <span>{vidofyAffiliateUrl.replace(/^https?:\/\//, '')}</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {isEditingVidofyUrl ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="url"
+                    defaultValue={vidofyAffiliateUrl}
+                    id="vidofy-aff-input"
+                    className="px-2 py-1 bg-slate-950 border border-purple-500/50 rounded text-xs text-white w-48 font-mono focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('vidofy-aff-input') as HTMLInputElement | null;
+                      if (input) handleSaveVidofyUrl(input.value);
+                    }}
+                    className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded text-xs cursor-pointer"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingVidofyUrl(false)}
+                    className="px-2 py-1 text-slate-400 hover:text-white text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingVidofyUrl(true)}
+                  className="text-[11px] text-slate-400 hover:text-purple-300 flex items-center gap-1 cursor-pointer transition font-mono"
+                >
+                  <span>[Change Affiliate Link]</span>
+                </button>
+              )}
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
               <input
@@ -617,20 +671,20 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-400 shrink-0" />
                   <h3 className="text-base font-black text-white">
-                    Review Your Ads &amp; Viral Hooks ({discoveredLeads.length} Generated)
+                    Targeted Placements &amp; High-Converting Ads ({discoveredLeads.length} Ranked by Likelihood of Sale)
                   </h3>
                   <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30">
-                    Review Before Placing
+                    Highest Likelihood First
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 max-w-xl">
-                  The AI formulated the highest-converting ad copy, viral hooks, and automatic video scripts for <strong className="text-white">{activeProductName}</strong>. Review below and approve to place.
+                  Buyers scraped and ranked by highest likelihood of a sale for <strong className="text-white">{activeProductName}</strong>, with tailored ad types, viral video scripts, and direct placement links.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={() => executeAutonomousPlacement(discoveredLeads, activeProductName || productName, affiliateTag, targetUrl)}
+                onClick={() => executeAutonomousPlacement(discoveredLeads, activeProductName || productName, productHashtags, targetUrl)}
                 disabled={isAutoPlacing}
                 className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap self-start sm:self-auto"
               >
@@ -726,7 +780,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 }
                 return true;
               })
-              .map((lead) => {
+              .map((lead, idx) => {
                 const isCopied = copiedId === lead.id;
 
                 // Channel badge styling helper
@@ -781,9 +835,23 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                           <span>{lead.communityName}</span>
                         </span>
 
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                        {/* Likelihood Ranking */}
+                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                           <TrendingUp className="w-3 h-3" />
-                          <span>{lead.buyerIntentScore}% Buyer Intent</span>
+                          <span>#{idx + 1} Ranked • {lead.buyerIntentScore}% Likelihood of Sale</span>
+                        </span>
+
+                        {/* Determined Ad Type */}
+                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                          <span>
+                            {lead.adType === 'video_ad'
+                              ? '🎬 Video Ad'
+                              : lead.adType === 'discussion'
+                              ? '💬 Community Reply'
+                              : lead.adType === 'social_hook'
+                              ? '📱 Social Hook'
+                              : '⚖️ Comparison Review'}
+                          </span>
                         </span>
 
                         <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded border border-emerald-800 flex items-center gap-1">
@@ -833,18 +901,78 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
 
                     {/* Ad Content: Video Ad vs Discussion Copy */}
                     {lead.adType === 'video_ad' || lead.videoScript ? (
-                      <div className="bg-[#0f172a] p-4 rounded-xl border border-purple-500/40 space-y-3">
-                        <div className="flex items-center justify-between text-xs font-semibold">
-                          <span className="flex items-center gap-1.5 text-purple-400 font-bold">
-                            <Flame className="w-4 h-4 text-purple-400" />
-                            <span>Viral Video Ad (Automatic Script &amp; Hooks)</span>
-                          </span>
-                          <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
-                            TikTok / Shorts / Reels
-                          </span>
+                      <div className="bg-[#0f172a] p-4 rounded-xl border border-purple-500/40 space-y-3.5">
+                        {/* Header & Vidofy 1-Click Action */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-purple-500/20 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
+                              <Flame className="w-4 h-4 text-purple-400" />
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-black text-white">Viral Video Ad Blueprint</span>
+                                <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
+                                  TikTok / Shorts / Reels
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-purple-300/80">
+                                Script, hooks, &amp; visual cues engineered for high conversion
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* 1-Click Launch Vidofy Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleLaunchVidofy(lead)}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-emerald-500 hover:from-purple-500 hover:to-emerald-400 text-white font-extrabold text-xs shadow-lg shadow-purple-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95"
+                            title="Copies this script to clipboard and opens Vidofy via your affiliate link"
+                          >
+                            <Zap className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300 animate-pulse" />
+                            <span>
+                              {copiedVidofyScriptId === lead.id
+                                ? '✓ Script Copied! Opening Vidofy...'
+                                : '🎬 Make Video on Vidofy (1-Click)'}
+                            </span>
+                            <ExternalLink className="w-3 h-3 opacity-80" />
+                          </button>
                         </div>
 
-                        {/* Viral Hook */}
+                        {/* Notice & How to Use Guide */}
+                        <div className="bg-amber-950/30 border border-amber-500/30 rounded-xl p-3 text-xs space-y-1.5">
+                          <div className="flex items-center justify-between flex-wrap gap-1">
+                            <div className="flex items-center gap-1.5 font-bold text-amber-300 text-[11px]">
+                              <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              <span>Notice: App crafts the blueprint; use Vidofy to render the MP4 video</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShowBlueprintGuide(!showBlueprintGuide)}
+                              className="text-[11px] font-mono text-amber-400 underline hover:text-amber-200 cursor-pointer"
+                            >
+                              {showBlueprintGuide ? 'Hide 3-Step Guide' : 'How to use blueprint (3 Steps) ▼'}
+                            </button>
+                          </div>
+
+                          {showBlueprintGuide && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-amber-500/20 text-[11px] text-amber-200/90">
+                              <div className="bg-slate-900/80 p-2 rounded-lg border border-amber-500/20">
+                                <strong className="text-white block mb-0.5">1. Click 'Make Video'</strong>
+                                Copies this hook, voiceover, and visual directions, and opens Vidofy.
+                              </div>
+                              <div className="bg-slate-900/80 p-2 rounded-lg border border-amber-500/20">
+                                <strong className="text-white block mb-0.5">2. Render in Vidofy</strong>
+                                Paste script into Vidofy to generate your 15-30s vertical video in seconds.
+                              </div>
+                              <div className="bg-slate-900/80 p-2 rounded-lg border border-amber-500/20">
+                                <strong className="text-white block mb-0.5">3. Upload Video Below</strong>
+                                Attach your rendered MP4 video so the AI has the physical video asset.
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 3-Second Viral Hook */}
                         <div className="bg-purple-950/40 p-3 rounded-lg border border-purple-500/30 text-xs space-y-1">
                           <span className="text-[10px] font-mono uppercase text-purple-300 font-bold block">
                             ⚡ 3-Second Scroll-Stopping Hook:
@@ -858,9 +986,9 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                           <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 space-y-1">
                             <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
-                              🎬 Scene Direction:
+                              🎬 Scene &amp; Visual Direction:
                             </span>
-                            <p className="text-slate-300 text-[11px]">
+                            <p className="text-slate-300 text-[11px] leading-relaxed">
                               {lead.videoScript?.visualDirection || '[Screen recording showing fast result. Cut to product page with dynamic music.]'}
                             </p>
                           </div>
@@ -869,7 +997,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                             <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
                               🎙️ Voiceover Script:
                             </span>
-                            <p className="text-slate-300 text-[11px]">
+                            <p className="text-slate-300 text-[11px] leading-relaxed">
                               {lead.videoScript?.voiceoverScript || lead.tailoredAdCopy}
                             </p>
                           </div>
@@ -878,11 +1006,78 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                         {/* Post Caption with Link */}
                         <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-xs space-y-1">
                           <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold block">
-                            🔗 Post Caption &amp; Embedded Link:
+                            🔗 Post Caption &amp; Embedded Referral Link:
                           </span>
                           <p className="text-slate-200 text-xs font-mono">
                             {lead.videoScript?.caption || lead.tailoredAdCopy}
                           </p>
+                        </div>
+
+                        {/* Attached Video Dropzone */}
+                        <div className="bg-slate-950/90 p-3 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                              <Video className="w-3.5 h-3.5 text-purple-400" />
+                              <span>Attached Video File (.mp4 / .mov / .webm):</span>
+                            </span>
+                            {(lead.videoUrl || videoPreview) && (
+                              <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800 flex items-center gap-1">
+                                <Check className="w-3 h-3" />
+                                <span>Video Asset Ready</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {lead.videoUrl || videoPreview ? (
+                            <div className="space-y-2">
+                              <video
+                                src={lead.videoUrl || videoPreview || ''}
+                                controls
+                                className="w-full max-h-52 rounded-lg bg-black border border-slate-800"
+                              />
+                              <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span className="truncate">File: {lead.videoFilename || videoFileName || 'video-ad.mp4'}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDiscoveredLeads(prev => prev.map(l => l.id === lead.id ? { ...l, videoUrl: undefined, videoFilename: undefined } : l));
+                                  }}
+                                  className="text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+                                >
+                                  <X className="w-3 h-3" />
+                                  <span>Remove</span>
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                              <label className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                                <Upload className="w-3.5 h-3.5 text-purple-400" />
+                                <span>Attach Video File</span>
+                                <input
+                                  type="file"
+                                  accept="video/mp4,video/quicktime,video/webm"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        if (typeof reader.result === 'string') {
+                                          const url = reader.result;
+                                          setDiscoveredLeads(prev => prev.map(l => l.id === lead.id ? { ...l, videoUrl: url, videoFilename: file.name } : l));
+                                        }
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                />
+                              </label>
+                              <span className="text-[10px] text-slate-400">
+                                Upload your finished video from Vidofy or your camera so the AI has the physical video asset.
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -951,38 +1146,6 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
                 );
               })}
           </div>
-
-          {/* Happy Place Balance: Starter Proof of Work & Upgrade Teaser */}
-          {(() => {
-            const userLic = getUserLicense();
-            if (isMasterUser || userLic.tier !== 'starter') return null;
-
-            return (
-              <div className="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-emerald-950/60 border border-emerald-500/50 p-5 rounded-2xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <h4 className="text-sm font-black text-white">
-                      Top 5 High-Intent Buyer Discussions Reached &amp; Links Placed!
-                    </h4>
-                  </div>
-                  <p className="text-xs text-slate-300 max-w-xl">
-                    You've experienced Cash Captain's autonomous radar and link placement live in action. There are <strong>33 additional high-intent buyers</strong> actively debating and requesting products like <span className="text-emerald-300 font-semibold">{activeProductName || 'yours'}</span> across Google Trends, Reddit Want Ads &amp; Review boards.
-                  </p>
-                </div>
-                {onOpenLicenseModal && (
-                  <button
-                    type="button"
-                    onClick={onOpenLicenseModal}
-                    className="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap self-start sm:self-auto"
-                  >
-                    <Crown className="w-4 h-4 text-slate-950" />
-                    <span>Auto-Place Into All 38+ Buyers ($97)</span>
-                  </button>
-                )}
-              </div>
-            );
-          })()}
         </div>
       )}
 

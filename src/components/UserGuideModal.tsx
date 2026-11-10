@@ -307,7 +307,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 </div>
                 <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-700 space-y-3 text-xs">
                   <p>
-                    Access the <strong>"📢 Social Blast Hub"</strong> tab in the main navigation or click the pink <strong>"Social Blast"</strong> button.
+                    Access the <strong>"📢 Social Blast Hub"</strong> tab in the main navigation to launch cross-platform syndication across all major networks.
                   </p>
                   <div className="space-y-2">
                     <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800">

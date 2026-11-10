@@ -37,10 +37,10 @@ import { FirebaseLiveGuideModal } from './components/FirebaseLiveGuideModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { UtilitiesPage } from './components/UtilitiesPage';
 import { MasterAccessModal } from './components/MasterAccessModal';
-import { MasterTopTierSuite } from './components/MasterTopTierSuite';
 import { CustomerAffiliateProgram } from './components/CustomerAffiliateProgram';
-import { UserLicenseModal } from './components/UserLicenseModal';
 import { UserAuthModal } from './components/UserAuthModal';
+import { UserLicenseModal } from './components/UserLicenseModal';
+import { EmailUpdatesScreen } from './components/EmailUpdatesScreen';
 import { getStoredUserProfile, AppUserProfile } from './services/userAuthService';
 import { getMasterSession, getMasterAppSettings, toggleMasterViewMode } from './services/masterAuthService';
 import { MasterAuthSession, MasterAppSettings } from './types';
@@ -113,8 +113,8 @@ export const App: React.FC = () => {
   const [showFirebaseGuideModal, setShowFirebaseGuideModal] = useState<boolean>(false);
   const [showUserGuideModal, setShowUserGuideModal] = useState<boolean>(false);
   const [showMasterModal, setShowMasterModal] = useState<boolean>(false);
-  const [showLicenseModal, setShowLicenseModal] = useState<boolean>(false);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [showLicenseModal, setShowLicenseModal] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<AppUserProfile | null>(() => getStoredUserProfile());
   const [masterSession, setMasterSession] = useState<MasterAuthSession>(() => getMasterSession());
   const [appSettings, setAppSettings] = useState<MasterAppSettings>(() => getMasterAppSettings());
@@ -414,53 +414,31 @@ export const App: React.FC = () => {
       />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
-        {/* UNIVERSAL AI COMMANDER (VOICE & TEXT CONTROL + 3-IN-1 CROSS-APP COMMUNICATION) */}
-        <AiCommander
-          offers={offers}
-          tracking={tracking}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onSaveNewOffer={handleSaveNewOffer}
-          onOpenSocialBlast={() => setShowSocialBlastModal(true)}
-          onOpenLicenseModal={() => setShowLicenseModal(true)}
-          onOpenAuthModal={() => setShowAuthModal(true)}
-          masterSession={masterSession}
-          currentUser={currentUser}
-        />
-
-        {/* TOP-TIER USABILITY SUITE (ONLY FOR MASTER OWNER IN ADMIN MODE) */}
-        {masterSession.isMasterLoggedIn && masterSession.viewMode === 'admin' && (
-          <div className="mb-6">
-            <MasterTopTierSuite
+        {/* TAB 0: AUTONOMOUS AI BUYER FINDER (DEFAULT) - AI COMMANDER RESTRICTED TO FIRST SCREEN ONLY */}
+        {activeTab === 'autopilot' && (
+          <div className="space-y-6">
+            <AiCommander
               offers={offers}
               tracking={tracking}
-              onUpdateOffers={(newOffers) => {
-                setOffers(newOffers);
-                saveOffers(newOffers);
-              }}
-              onUpdateTracking={(newTracking) => {
-                setTracking(newTracking);
-                saveTracking(newTracking);
-              }}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              onSaveNewOffer={handleSaveNewOffer}
+              onOpenSocialBlast={() => setShowSocialBlastModal(true)}
+              onOpenLicenseModal={() => setShowLicenseModal(true)}
+              onOpenAuthModal={() => setShowAuthModal(true)}
               masterSession={masterSession}
-              onOpenMasterModal={() => setShowMasterModal(true)}
-              onSwitchToCustomerMode={handleToggleMasterViewMode}
-              onAppSettingsChange={(newSettings) => setAppSettings(newSettings)}
+              currentUser={currentUser}
+            />
+
+            <AutoPilotRadar
+              existingOffers={offers}
+              onSaveNewOffer={handleSaveNewOffer}
+              affiliateProConfig={affiliateProConfig}
+              onRecordClick={handleRecordClick}
+              onOpenEmailModal={() => setShowEmailModal(true)}
+              isMasterUser={true}
             />
           </div>
-        )}
-
-        {/* TAB 0: AUTONOMOUS AI BUYER FINDER (DEFAULT) */}
-        {activeTab === 'autopilot' && (
-          <AutoPilotRadar
-            existingOffers={offers}
-            onSaveNewOffer={handleSaveNewOffer}
-            affiliateProConfig={affiliateProConfig}
-            onRecordClick={handleRecordClick}
-            onOpenEmailModal={() => setShowEmailModal(true)}
-            isMasterUser={masterSession.isMasterLoggedIn}
-            onOpenLicenseModal={() => setShowLicenseModal(true)}
-          />
         )}
 
         {/* TAB 1: OFFERS */}
@@ -553,6 +531,15 @@ export const App: React.FC = () => {
           />
         )}
 
+        {/* TAB: DEDICATED EMAIL UPDATES & SALES BRIEFINGS SCREEN */}
+        {activeTab === 'email' && (
+          <EmailUpdatesScreen
+            tracking={tracking}
+            offers={offers}
+            leads={[]}
+          />
+        )}
+
         {/* TAB 4: CONNECT 3-IN-1 AI SUITE */}
         {activeTab === 'affiliate_pro' && (
           <AffiliateProConnect
@@ -573,11 +560,6 @@ export const App: React.FC = () => {
               tracking={tracking}
               offers={offers}
               onUpdateMetrics={handleUpdateMetrics}
-            />
-
-            <ClickTrackerLog
-              clickEvents={clickEvents}
-              offers={offers}
             />
           </div>
         )}
@@ -671,14 +653,6 @@ export const App: React.FC = () => {
         onSessionChange={(newSession) => setMasterSession(newSession)}
       />
 
-      {/* Modal: Customer License Status, Slot Quota & Upgrade */}
-      <UserLicenseModal
-        isOpen={showLicenseModal}
-        onClose={() => setShowLicenseModal(false)}
-        isMasterUser={masterSession.isMasterLoggedIn}
-        appSettings={appSettings}
-      />
-
       {/* Modal: Customer User Account & Authentication Portal */}
       <UserAuthModal
         isOpen={showAuthModal}
@@ -701,31 +675,14 @@ export const App: React.FC = () => {
         onOpenLicenseModal={() => setShowLicenseModal(true)}
       />
 
-      {/* Floating Mode Switcher (Visible ONLY to Ty when viewing the app in Customer Mode) */}
-      {masterSession.isMasterLoggedIn && masterSession.viewMode === 'customer' && (
-        <aside aria-label="Master Controls" className="fixed bottom-4 right-4 z-50 bg-slate-900/95 border border-emerald-500/50 rounded-xl px-3.5 py-2 shadow-2xl backdrop-blur flex items-center gap-2.5 text-xs">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-slate-200 font-bold">Ty Birchfield</span>
-            <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-mono">Customer Preview</span>
-          </div>
-          <button
-            onClick={handleToggleMasterViewMode}
-            className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-[11px] transition shadow shadow-emerald-500/20 cursor-pointer flex items-center gap-1"
-            title="Switch back to Master Admin Suite"
-          >
-            <Crown className="w-3 h-3 text-slate-950" />
-            <span>Switch to Admin</span>
-          </button>
-          <button
-            onClick={() => setShowMasterModal(true)}
-            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 cursor-pointer"
-            title="Open Master Settings"
-          >
-            <Sliders className="w-3.5 h-3.5 text-emerald-400" />
-          </button>
-        </aside>
-      )}
+      {/* Modal: Customer License Purchase & Key Activation Portal */}
+      <UserLicenseModal
+        isOpen={showLicenseModal}
+        onClose={() => setShowLicenseModal(false)}
+        isMasterUser={true}
+        appSettings={appSettings}
+        onLicenseChanged={() => {}}
+      />
 
       {/* Footer (Clean, Silver & Neon Green with subtle discrete admin lock) */}
       <footer className="border-t border-slate-700/80 bg-slate-900/90 py-5 mt-12 text-xs text-slate-400">

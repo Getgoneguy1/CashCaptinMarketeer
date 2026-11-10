@@ -543,65 +543,6 @@ ${affiliateDeepLink}
         </div>
       </div>
 
-      {/* Embedded Deep Link Display & Live App URL Configuration */}
-      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-5 space-y-3 text-xs shadow-xl">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 flex-1 min-w-0 w-full">
-            <span className="font-bold text-slate-300 whitespace-nowrap flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-emerald-400" />
-              Live Destination URL:
-            </span>
-            <input
-              type="text"
-              value={customLiveUrl}
-              onChange={(e) => handleCustomUrlChange(e.target.value)}
-              placeholder="https://..."
-              className="bg-[#060913] font-mono text-emerald-400 px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-emerald-500 flex-1 text-xs"
-            />
-            <button
-              onClick={() => handleCustomUrlChange(DEFAULT_APP_URL)}
-              title="Reset to verified live server URL"
-              className="px-2.5 py-1.5 text-[11px] rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 whitespace-nowrap cursor-pointer transition-colors"
-            >
-              Reset Default
-            </button>
-          </div>
-          <a
-            href={affiliateDeepLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Test Live URL</span>
-          </a>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2.5 border-t border-slate-800">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="font-bold text-slate-400 whitespace-nowrap">Syndication Embed Link:</span>
-            <span className="font-mono text-emerald-400 truncate bg-[#060913] px-3 py-1.5 rounded-xl border border-slate-800 flex-1">
-              {affiliateDeepLink}
-            </span>
-          </div>
-          <button
-            onClick={() => handleCopy(affiliateDeepLink, 'target_link')}
-            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-          >
-            {copiedPlatform === 'target_link' ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">Copied Link!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5 text-slate-400" />
-                <span>Copy Link</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
 
       {/* Platform Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-850 pb-2 overflow-x-auto">
@@ -629,25 +570,68 @@ ${affiliateDeepLink}
             key={ad.platform}
             className="bg-[#0c1222] border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all shadow-xl flex flex-col"
           >
-            {/* Ad Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-800/80 flex-wrap gap-3">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{ad.platformIcon}</span>
+            {/* Clean Platform Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">{ad.platformIcon}</span>
                 <div>
-                  <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <h3 className="text-sm font-black text-white flex items-center gap-2">
                     {ad.platform} Advertisement
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                      {ad.badge}
-                    </span>
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">{ad.hook}</p>
                 </div>
               </div>
+              <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                {ad.badge}
+              </span>
+            </div>
 
-              <div className="flex items-center gap-2">
+            {/* Video Creator Blueprint (Clean, Obvious & Minimal) */}
+            {ad.scriptOutline && (
+              <div className="my-3 p-3.5 rounded-xl bg-[#060913] border border-emerald-500/30 text-xs space-y-2">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <div className="flex items-center gap-2 font-bold text-white text-xs">
+                    <Video className="w-4 h-4 text-emerald-400" />
+                    <span>Video Creator Blueprint (How to Record or Generate This Video)</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Hook Window: {ad.scriptOutline.hookDuration}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">🎬 Scene Action:</span>
+                    <span className="text-slate-200">{ad.scriptOutline.action}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-amber-300 font-bold shrink-0">🎵 Suggested Audio:</span>
+                    <span className="text-slate-300">{ad.scriptOutline.soundSuggestion}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Ad Headline & Content */}
+            <div className="mt-3.5 space-y-2">
+              <div className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <span className="text-emerald-400">Headline / Hook:</span>
+                <span className="text-slate-200 font-normal">"{ad.headline}"</span>
+              </div>
+              <pre className="text-xs font-sans text-slate-200 whitespace-pre-wrap bg-[#060913] p-4 rounded-xl border border-slate-800 leading-relaxed max-h-56 overflow-y-auto">
+                {ad.bodyText}
+              </pre>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-slate-400 font-mono text-[11px] truncate max-w-sm">
+                {ad.hashtags}
+              </span>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
                 <button
                   onClick={() => handleCopy(ad.bodyText, ad.platform)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   {copiedPlatform === ad.platform ? (
                     <>
@@ -667,62 +651,13 @@ ${affiliateDeepLink}
                     href={ad.directShareUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-emerald-500/20"
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-emerald-500/20"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     <span>{ad.ctaText}</span>
                   </a>
                 )}
               </div>
-            </div>
-
-            {/* Video Script Specs (TikTok / Instagram) */}
-            {ad.scriptOutline && (
-              <div className="my-3.5 p-3.5 rounded-xl bg-[#060913] border border-slate-800 text-xs">
-                <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5 mb-2">
-                  <Video className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Viral Video Creator Blueprint:</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-slate-300">
-                  <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                      Hook Window:
-                    </span>
-                    <span className="font-mono text-emerald-400">{ad.scriptOutline.hookDuration}</span>
-                  </div>
-                  <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                      Suggested Sound:
-                    </span>
-                    <span className="text-amber-300">{ad.scriptOutline.soundSuggestion}</span>
-                  </div>
-                  <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                      Visual Screenplay:
-                    </span>
-                    <span className="text-slate-200">{ad.scriptOutline.action}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Ad Headline & Content */}
-            <div className="mt-3.5 space-y-2">
-              <div className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                <span className="text-emerald-400">Headline / Hook:</span>
-                <span className="text-slate-200 font-normal">"{ad.headline}"</span>
-              </div>
-              <pre className="text-xs font-sans text-slate-200 whitespace-pre-wrap bg-[#060913] p-4 rounded-xl border border-slate-800 leading-relaxed max-h-56 overflow-y-auto">
-                {ad.bodyText}
-              </pre>
-            </div>
-
-            {/* Hashtags Footer */}
-            <div className="mt-3.5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
-              <span className="text-slate-400 font-mono text-[11px]">{ad.hashtags}</span>
-              <span className="text-[11px] text-emerald-400 font-mono">
-                Target: {affiliateDeepLink}
-              </span>
             </div>
           </div>
         ))}

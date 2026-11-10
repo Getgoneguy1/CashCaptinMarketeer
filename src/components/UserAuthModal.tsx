@@ -294,6 +294,17 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
               >
                 <span>Register (Free)</span>
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  if (onOpenLicenseModal) onOpenLicenseModal();
+                }}
+                className="px-3 py-2 rounded-lg font-black transition flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer shadow-md shadow-emerald-500/20"
+                title="Purchase License or Activate Key"
+              >
+                <span>💳 Buy License</span>
+              </button>
             </>
           )}
 
@@ -493,6 +504,23 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
                 <p>&bull; 3 Permanent Autonomous Campaign Slots</p>
                 <p>&bull; Top 5 High-Intent Buyer Discussions Per Offer</p>
                 <p>&bull; 100% Free Lifetime Account</p>
+              </div>
+
+              <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl text-[11px] text-slate-300 flex items-center justify-between gap-2">
+                <div>
+                  <strong className="text-white block text-xs">Want More Campaign Slots?</strong>
+                  <span className="text-slate-400">Upgrade to Pro ($97) or Founder Lifetime ($197)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenLicenseModal) onOpenLicenseModal();
+                  }}
+                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition shrink-0 cursor-pointer shadow-sm"
+                >
+                  Buy License &rarr;
+                </button>
               </div>
 
               <button

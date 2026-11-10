@@ -835,56 +835,54 @@ export async function findBuyerLeads(
   _imageUrl?: string
 ): Promise<BuyerLead[]> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const deepLink = targetUrl || `https://example.com/product?aff_id=${encodeURIComponent(affiliateId)}`;
-  const detectedCategory = detectMarketplaceCategory(productName, productDescription);
-  const categoryDef = MARKETPLACE_DIRECTORY[detectedCategory];
+  const deepLink = targetUrl?.trim() || 'https://example.com/product';
+  const cleanName = productName.trim();
 
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey });
       const prompt = `
-You are an elite direct-response copywriter and autonomous buyer-intent placement agent.
-The user wants to find active buyers and craft the HIGHEST CONVERTING ad copy possible for:
-Product: ${productName}
-Description: ${productDescription}
-Affiliate Link: ${deepLink}
-Detected Category: ${categoryDef.title} (Top Platforms: ${categoryDef.top1}, ${categoryDef.top2})
+You are an autonomous buyer-intent discovery agent and direct-response advertising engine.
+Your mission is to take the user's specific product, find active buyers on the web, determine where to place the ad by HIGHEST LIKELIHOOD OF A SALE, determine what type of ad should be used, and then write the highest-converting ad copy or video script.
 
-Generate 6-8 high-intent buyer inquiries and the highest-converting ad copy possible across these formats:
-1. Viral Video Ad (TikTok / YouTube Shorts / Reels):
-   - platform: "TikTok / YouTube Shorts Video Ad"
-   - adType: "video_ad"
-   - viralHook: A killer 3-second scroll-stopping hook that grabs attention immediately.
-   - videoScript: An object with { "hook": "...", "visualDirection": "[Scene 1... Scene 2...]", "voiceoverScript": "...", "caption": "..." with ${deepLink} }
-   - tailoredAdCopy: The full video script with Hook, Visuals, Voiceover, and CTA link: ${deepLink}
-2. Peer-to-Peer Community Recommendation (Reddit niche subreddits, Quora):
-   - platform: "Reddit" or "Quora"
-   - adType: "discussion"
-   - tailoredAdCopy: Authentic, expert, value-first response that solves their problem, highlights why ${productName} is the best choice, and naturally includes: ${deepLink}
-3. Want Ads & Buyer Inquiries (Facebook Marketplace ISO, Classifieds, Craigslist WTB):
-   - platform: "Want Ads (Marketplace/Classifieds)"
-   - adType: "classified"
-   - tailoredAdCopy: Punchy, benefit-driven ad copy with bulleted advantages and instant access link: ${deepLink}
-4. B2B / Specialized Marketplace Inquiries (${categoryDef.top1}, ${categoryDef.top2}):
-   - platform: "${categoryDef.top1}"
-   - adType: "classified"
-   - tailoredAdCopy: Professional, high-trust procurement recommendation with link: ${deepLink}
+Input Product Details:
+- Product Name: "${cleanName}"
+- Product Description: "${productDescription}"
+- Referral / Affiliate Link: "${deepLink}"
 
-For each lead, return:
-- platform: string
-- adType: "video_ad" | "discussion" | "classified"
-- viralHook: string (compelling 3-second hook)
-- videoScript: object (if video_ad, with hook, visualDirection, voiceoverScript, caption)
-- channelCategory: string
-- marketplaceName: string
-- communityName: string
-- threadTitle: string (target inquiry or buyer debate)
-- threadUrl: string
-- buyerIntentScore: number (90-99)
-- buyerPainPoint: string
-- tailoredAdCopy: string (the highest converting ad copy possible, with ${deepLink})
+Follow this exact 4-step pipeline:
+1. SCRAPE & DISCOVER BUYERS: Find where people who want this exact product (or need to solve this exact problem) congregate online (e.g., TikTok/YouTube Shorts buyers, Reddit discussion threads, Quora questions, Facebook niche groups, Twitter/X buyers, comparison review searchers).
+2. LIKELIHOOD OF SALE: Rank 6-8 online placement destinations from highest to lowest likelihood of sale (buyerIntentScore: 94-99).
+3. AD TYPE DETERMINATION: For each destination, choose the optimal ad format:
+   - "video_ad": for TikTok, YouTube Shorts, or Reels (15-sec hook, scene directions, voiceover script, caption with ${deepLink})
+   - "discussion": for Reddit or Quora (authentic, consultative direct-response recommendation with ${deepLink})
+   - "social_hook": for Facebook Groups or Twitter/X (engaging headline hook, 3 key benefits, call to action with ${deepLink})
+   - "classified": for comparison boards (direct side-by-side value breakdown with ${deepLink})
+4. CRAFT HIGH-CONVERTING AD COPY: Write the best possible copy or video script tailored strictly to that platform's buyers.
+5. TARGET SEARCH URL: Provide a direct URL to search for discussions/videos about "${cleanName}" on that specific platform (e.g., https://www.reddit.com/search/?q=${encodeURIComponent(cleanName)} or https://www.tiktok.com/search?q=${encodeURIComponent(cleanName)}). Never link to unrelated physical hardware stores like eBay.
 
-Return strictly a valid JSON array of objects.
+Return strictly a valid JSON array of objects with this schema:
+[
+  {
+    "platform": "TikTok / YouTube Shorts Video Ad",
+    "adType": "video_ad",
+    "viralHook": "Stop scrolling if you need ${cleanName}...",
+    "videoScript": {
+      "hook": "...",
+      "visualDirection": "[Scene 1: ...] [Scene 2: ...]",
+      "voiceoverScript": "...",
+      "caption": "... ${deepLink}"
+    },
+    "channelCategory": "social_intent",
+    "marketplaceName": "TikTok & Shorts Viral Discovery",
+    "communityName": "Short-Form Video FYP Feed",
+    "threadTitle": "Viral Hook & Video Demonstration for ${cleanName}",
+    "threadUrl": "https://www.tiktok.com/search?q=${encodeURIComponent(cleanName)}",
+    "buyerIntentScore": 99,
+    "buyerPainPoint": "...",
+    "tailoredAdCopy": "..."
+  }
+]
 `;
 
       const response = await ai.models.generateContent({
@@ -902,18 +900,18 @@ Return strictly a valid JSON array of objects.
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed.map((item, idx) => ({
           id: `lead-${Date.now()}-${idx}`,
-          platform: item.platform || categoryDef.top1,
+          platform: item.platform || 'High-Intent Buyer Channel',
           adType: item.adType || (item.platform?.toLowerCase().includes('video') || item.platform?.toLowerCase().includes('tiktok') ? 'video_ad' : 'discussion'),
           viralHook: item.viralHook || undefined,
           videoScript: item.videoScript || undefined,
-          channelCategory: (item.channelCategory as BuyerChannelCategory) || detectedCategory,
-          marketplaceName: item.marketplaceName || item.platform || categoryDef.top1,
-          communityName: item.communityName || `${categoryDef.title} Marketplace`,
-          threadTitle: item.threadTitle || `Looking to buy ${productName}`,
-          threadUrl: item.threadUrl || `https://www.google.com/search?q=${encodeURIComponent(item.threadTitle || productName)}`,
-          buyerIntentScore: item.buyerIntentScore || 95,
-          buyerPainPoint: item.buyerPainPoint || 'Needs a verified, high-quality solution without manual friction.',
-          tailoredAdCopy: item.tailoredAdCopy || `Check out ${productName} here: ${deepLink}`,
+          channelCategory: (item.channelCategory as BuyerChannelCategory) || 'community',
+          marketplaceName: item.marketplaceName || item.platform || 'Buyer Intent Marketplace',
+          communityName: item.communityName || `${cleanName} Buyer Community`,
+          threadTitle: item.threadTitle || `Looking for top solutions for ${cleanName}`,
+          threadUrl: item.threadUrl || `https://www.google.com/search?q=${encodeURIComponent(cleanName + ' reviews discussions')}`,
+          buyerIntentScore: item.buyerIntentScore || (99 - idx),
+          buyerPainPoint: item.buyerPainPoint || `Active buyer seeking verified, high-performance results for ${cleanName}.`,
+          tailoredAdCopy: item.tailoredAdCopy || `Check out ${cleanName} here: ${deepLink}`,
           affiliateDeepLink: deepLink,
           status: 'Ready to Post'
         }));
@@ -934,661 +932,126 @@ export function generateAutonomousBuyerLeads(
 ): BuyerLead[] {
   const cleanName = productName.trim();
   const lower = (productName + ' ' + productDescription).toLowerCase();
-  const category = detectMarketplaceCategory(productName, productDescription);
+  const customTags = _affiliateId?.trim()
+    ? _affiliateId.split(/[\s,]+/).map(t => t.startsWith('#') ? t : `#${t}`).join(' ')
+    : `#viral #${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '')} #musthave`;
 
-  // 1. DIGITAL PRODUCTS, SOFTWARE & SAAS
-  if (category === 'saas_digital') {
-    return [
-      {
-        id: `lead-${Date.now()}-video`,
-        platform: 'TikTok / YouTube Shorts Video Ad',
-        adType: 'video_ad',
-        viralHook: `Stop scrolling if you need ${cleanName}! Here is the secret tool nobody talks about...`,
-        videoScript: {
-          hook: `If you're still doing ${cleanName} the hard way, you need to see this right now.`,
-          visualDirection: `[Scene 1: Hold up phone or point at screen showing problem. Cut to quick screen demo of ${cleanName}. Fast text overlays with dynamic music.]`,
-          voiceoverScript: `Stop wasting hours trying to do this manually. ${cleanName} completely handles it on auto-pilot. Tap the link right now to grab it before this deal expires!`,
-          caption: `This completely changed how I handle ${cleanName} 🤯 Tap the link or visit: ${deepLink} #viral #${cleanName.toLowerCase().replace(/\s+/g, '')} #musthave`
-        },
-        channelCategory: 'social_intent',
-        marketplaceName: 'TikTok & Shorts Viral Feed',
-        communityName: 'For You Page (FYP) & Short-Form Video',
-        threadTitle: `Viral Video Ad: "Stop doing ${cleanName} the hard way"`,
-        threadUrl: `https://www.tiktok.com/tag/${encodeURIComponent(cleanName.replace(/\s+/g, ''))}`,
-        buyerIntentScore: 99,
-        buyerPainPoint: 'Social media viewers needing immediate visual proof and effortless problem solving.',
-        tailoredAdCopy: `[VIRAL VIDEO SCRIPT]\n⚡ 3-Sec Hook: "If you're still doing ${cleanName} the hard way, stop right now."\n🎬 Visual: [Quick screen recording / demo showing instant results with ${cleanName}]\n🎙️ Voiceover: "Stop wasting hours doing this manually. ${cleanName} handles it completely on auto-pilot."\n🔗 Call To Action: "Tap the link right here to get instant access: ${deepLink}"`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-1`,
-        platform: 'Acquire.com',
-        channelCategory: 'saas_digital',
-        marketplaceName: 'Acquire.com',
-        communityName: 'Acquire.com: Vetted Buyer Inquiries & SaaS Acquisition',
-        threadTitle: `Vetted Buyer ISO: Cash-flowing micro-SaaS or growth utility in ${cleanName} vertical`,
-        threadUrl: `https://acquire.com`,
-        buyerIntentScore: 99,
-        buyerPainPoint: 'Accredited buyers and software operators looking to acquire or partner with automated tools in this space.',
-        tailoredAdCopy: `For operators and teams looking for an active solution in this category, ${cleanName} delivers automated workflows and immediate monetization. Access the live system and details here: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-2`,
-        platform: 'AppSumo',
-        channelCategory: 'saas_digital',
-        marketplaceName: 'AppSumo',
-        communityName: 'AppSumo: Early Adopter & Lifetime Deal Buyers',
-        threadTitle: `Early Adopter Demand: "Looking for lifetime software deals or early access for ${cleanName}"`,
-        threadUrl: `https://appsumo.com/search/?query=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 98,
-        buyerPainPoint: 'Small business owners tired of high recurring monthly subscriptions wanting lifetime access.',
-        tailoredAdCopy: `If you want to lock in access to ${cleanName} without recurring agency fees, check out the direct portal: ${deepLink}. Fully functional and ready to deploy immediately.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-3`,
-        platform: 'Product Hunt & G2',
-        channelCategory: 'saas_digital',
-        marketplaceName: 'Product Hunt / G2',
-        communityName: 'G2 & Product Hunt: High-Intent B2B Software Procurement',
-        threadTitle: `B2B Procurement Request: Top alternatives to legacy platforms in ${cleanName}`,
-        threadUrl: `https://www.producthunt.com/search?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 96,
-        buyerPainPoint: 'Growth teams needing a modern, autonomous tool without complex setup or heavy developer hours.',
-        tailoredAdCopy: `When evaluating software tools in this category, ${cleanName} stands out for speed and frictionless setup. See the product breakdown and direct link: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-4`,
-        platform: 'Flippa',
-        channelCategory: 'saas_digital',
-        marketplaceName: 'Flippa',
-        communityName: 'Flippa: Digital Assets, Codebases & Apps',
-        threadTitle: `Buyer Wanted: Turnkey software tools, extensions or web engines with active traffic`,
-        threadUrl: `https://flippa.com/search?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 95,
-        buyerPainPoint: 'Asset buyers seeking turnkey tech ready for deployment.',
-        tailoredAdCopy: `Deploy ${cleanName} directly to capture high-intent buyer traffic and manage deals. Full access: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-5`,
-        platform: 'Gumroad Discover',
-        channelCategory: 'gumroad',
-        marketplaceName: 'Gumroad',
-        communityName: 'Gumroad: Creator Tools & Developer Downloads',
-        threadTitle: `Top rated digital tools, scripts, and automation assets for ${cleanName}`,
-        threadUrl: `https://gumroad.com/discover?query=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 93,
-        buyerPainPoint: 'Creators and solo operators looking for instant digital scripts and toolkits.',
-        tailoredAdCopy: `Streamline your workflow with ${cleanName}. Tested for immediate implementation: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-6`,
-        platform: 'Reddit',
-        channelCategory: 'community',
-        marketplaceName: 'Reddit',
-        communityName: 'r/SaaS & r/Entrepreneur',
-        threadTitle: `What is the most reliable, hands-off platform for ${cleanName}?`,
-        threadUrl: `https://www.reddit.com/search/?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 97,
-        buyerPainPoint: 'Searching for an honest recommendation without corporate fluff.',
-        tailoredAdCopy: `I recommend checking out ${cleanName} (${deepLink}). It eliminates manual bottlenecks and gives you direct access without high monthly retainers.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      }
-    ];
-  }
-
-  // 2. CONSUMER ELECTRONICS & TECH (Phones, Hardware, Xerox Toner, Consumables)
-  if (category === 'electronics_tech') {
-    return [
-      {
-        id: `lead-${Date.now()}-1`,
-        platform: 'eBay & Amazon',
-        channelCategory: 'electronics_tech',
-        marketplaceName: 'eBay / Amazon',
-        communityName: 'eBay: Hardware, Office Supplies & Consumables',
-        threadTitle: `ISO: Bulk OEM ${cleanName} (genuine cartridges, components & parts)`,
-        threadUrl: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 99,
-        buyerPainPoint: 'Offices and repair techs tired of defective third-party knockoffs seeking verified genuine supply.',
-        tailoredAdCopy: `If you are looking for authentic, verified ${cleanName} with full manufacturer compatibility and fast shipping, check out this direct supply link: ${deepLink}. Sourced from certified stock.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-2`,
-        platform: 'Swappa',
-        channelCategory: 'electronics_tech',
-        marketplaceName: 'Swappa',
-        communityName: 'Swappa: Direct Tech Buyers & Hardware Exchange',
-        threadTitle: `Buyer Wanted: Gently used or new open-box ${cleanName} with verified serial & zero issues`,
-        threadUrl: `https://swappa.com/search?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 98,
-        buyerPainPoint: 'Buyers wanting peer-to-peer pricing with zero junk listings and guaranteed condition.',
-        tailoredAdCopy: `Looking for top-tier quality on ${cleanName}? Review verified specs and direct order access here: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-3`,
-        platform: 'Liquidation.com & B-Stock',
-        channelCategory: 'b2b_commodities',
-        marketplaceName: 'Liquidation.com',
-        communityName: 'Liquidation.com: Surplus Office Consumables & Electronics',
-        threadTitle: `Surplus Lot Buyer: Purchasing bulk pallets of ${cleanName} & related supplies`,
-        threadUrl: `https://www.liquidation.com/auction/search?query=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 96,
-        buyerPainPoint: 'Resellers and corporate procurement looking to secure volume lots below retail price.',
-        tailoredAdCopy: `For volume orders and immediate stock on ${cleanName}, inspect available inventory and order directly: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-4`,
-        platform: 'Newegg Marketplace',
-        channelCategory: 'electronics_tech',
-        marketplaceName: 'Newegg',
-        communityName: 'Newegg Marketplace: Enterprise IT & Hardware Tech',
-        threadTitle: `Enterprise IT Order: Restocking ${cleanName} for commercial printing/hardware workstations`,
-        threadUrl: `https://www.newegg.com/p/pl?d=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 95,
-        buyerPainPoint: 'Corporate IT buyers seeking fast fulfillment and invoice verification.',
-        tailoredAdCopy: `Verified supply for ${cleanName} ready for shipment: ${deepLink}. Direct checkout and guaranteed compatibility.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-5`,
-        platform: 'Back Market',
-        channelCategory: 'electronics_tech',
-        marketplaceName: 'Back Market',
-        communityName: 'Back Market: Certified Hardware & Components',
-        threadTitle: `Buyer Request: Certified grade-A ${cleanName} with warranty coverage`,
-        threadUrl: `https://www.backmarket.com/en-us/search?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 93,
-        buyerPainPoint: 'Ensuring equipment is fully tested before purchase.',
-        tailoredAdCopy: `Tested and verified ${cleanName} available here: ${deepLink}. High reliability with fast tracking.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-6`,
-        platform: 'Want Ads (Marketplace/Craigslist)',
-        channelCategory: 'want_ads',
-        marketplaceName: 'Facebook Marketplace',
-        communityName: 'Facebook Marketplace & Craigslist: Office & Tech Wanted',
-        threadTitle: `ISO: In search of ${cleanName} - will pick up or pay shipping!`,
-        threadUrl: `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(cleanName + ' wanted')}`,
-        buyerIntentScore: 97,
-        buyerPainPoint: 'Needs an immediate replacement part or supply without dealership retail markups.',
-        tailoredAdCopy: `If you still need ${cleanName}, take a look at this link: ${deepLink}. Direct order, fast fulfillment, and guaranteed authentic.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      }
-    ];
-  }
-
-  // 3. B2B, BULK COMMODITIES & SURPLUS (Apples, Produce, Paydirt, Bulk Overstock)
-  if (category === 'b2b_commodities') {
-    const isProduce = lower.includes('apple') || lower.includes('fruit') || lower.includes('produce') || lower.includes('grain');
-    const isMining = lower.includes('gold') || lower.includes('paydirt') || lower.includes('mineral') || lower.includes('ore');
-
-    if (isProduce) {
-      return [
-        {
-          id: `lead-${Date.now()}-1`,
-          platform: 'ProducePay',
-          channelCategory: 'b2b_commodities',
-          marketplaceName: 'ProducePay',
-          communityName: 'ProducePay: Agricultural Commodities Wholesale Network',
-          threadTitle: `Commercial Buyer ISO: Bulk contracted ${cleanName} (grade-A fresh fruit lots)`,
-          threadUrl: `https://producepay.com`,
-          buyerIntentScore: 99,
-          buyerPainPoint: 'Wholesale produce brokers and grocery chains seeking direct farm-level supply with transparent freight.',
-          tailoredAdCopy: `For verified, high-volume sourcing of ${cleanName} with certified grading standards and direct supply chain integrity, review available orders here: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-2`,
-          platform: 'FBX (Foodman)',
-          channelCategory: 'b2b_commodities',
-          marketplaceName: 'FBX (Foodman)',
-          communityName: 'Foodman FBX: Commercial Food Wholesale & Distribution',
-          threadTitle: `Distributor WTB: Multiple truckloads of premium ${cleanName} for seasonal distribution`,
-          threadUrl: `https://foodman.com`,
-          buyerIntentScore: 98,
-          buyerPainPoint: 'Securing reliable volume shipments before regional wholesale shortages.',
-          tailoredAdCopy: `Lock in your shipments for ${cleanName} directly. Access product details and order allocations here: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-3`,
-          platform: 'B-Stock & Liquidation.com',
-          channelCategory: 'b2b_commodities',
-          marketplaceName: 'B-Stock',
-          communityName: 'B-Stock: Surplus & Bulk Inventory Distribution',
-          threadTitle: `Bulk Lot Sourcing: Contract pricing for ${cleanName} pallets and wholesale boxes`,
-          threadUrl: `https://bstock.com`,
-          buyerIntentScore: 95,
-          buyerPainPoint: 'Commercial food service and institutional buyers seeking discount bulk lots.',
-          tailoredAdCopy: `Explore wholesale pricing and volume allocations for ${cleanName}: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-4`,
-          platform: 'ThomasNet & Alibaba',
-          channelCategory: 'b2b_commodities',
-          marketplaceName: 'ThomasNet',
-          communityName: 'ThomasNet: Food Processing & Agricultural Sourcing',
-          threadTitle: `Food Processing Procurement: Sourcing raw ${cleanName} for packing & manufacturing`,
-          threadUrl: `https://www.thomasnet.com/search.html?cov=NA&what=${encodeURIComponent(cleanName)}`,
-          buyerIntentScore: 94,
-          buyerPainPoint: 'Procurement managers needing consistent supplier reliability.',
-          tailoredAdCopy: `Direct commercial supply for ${cleanName} with transparent delivery logistics: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-5`,
-          platform: 'Want Ads (Marketplace/Craigslist)',
-          channelCategory: 'want_ads',
-          marketplaceName: 'Facebook Marketplace',
-          communityName: 'Facebook Marketplace: Farm Fresh & Wholesale Produce Wanted',
-          threadTitle: `ISO: Bulk fresh ${cleanName} (bushels/cases) for canning, cider, and local retail`,
-          threadUrl: `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(cleanName + ' wanted')}`,
-          buyerIntentScore: 96,
-          buyerPainPoint: 'Local buyers wanting bulk volume without grocery store retail markups.',
-          tailoredAdCopy: `If you are looking for top-grade ${cleanName} in bulk, check out this direct link: ${deepLink}. Premium quality guaranteed.`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        }
-      ];
-    }
-
-    if (isMining) {
-      return [
-        {
-          id: `lead-${Date.now()}-1`,
-          platform: 'Want Ads (Marketplace/Craigslist)',
-          channelCategory: 'want_ads',
-          marketplaceName: 'Facebook Marketplace',
-          communityName: 'Facebook Marketplace: ISO & Prospecting Classifieds',
-          threadTitle: `ISO: Verified unsearched gold-bearing paydirt concentrates with visible pickers/nuggets`,
-          threadUrl: `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent('gold paydirt wanted')}`,
-          buyerIntentScore: 99,
-          buyerPainPoint: 'Burnt out by fake "salted" paydirt bags on auction sites with microscopic flour gold and no guaranteed return.',
-          tailoredAdCopy: `If you are looking for authentic unsearched concentrates with real coarse gold rather than flour dust, check out ${cleanName} (${deepLink}). Sourced directly from verified claims with certified mesh classification so you get authentic recovery on every pan.`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-2`,
-          platform: 'eBay & Amazon',
-          channelCategory: 'b2b_commodities',
-          marketplaceName: 'eBay',
-          communityName: 'eBay: Mining Equipment & Raw Concentrates',
-          threadTitle: `Buyer Wanted: Heavy mineral concentrates and paydirt with high recovery guarantee`,
-          threadUrl: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent('gold paydirt unsearched')}`,
-          buyerIntentScore: 97,
-          buyerPainPoint: 'Prospectors seeking rich concentrates with coarse pickers and heavy black sand.',
-          tailoredAdCopy: `Side-by-side panning tests show ${cleanName} consistently delivers coarse gold pickers. See verified panning results and claim specs here: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-3`,
-          platform: 'Liquidation.com & B-Stock',
-          channelCategory: 'b2b_commodities',
-          marketplaceName: 'Liquidation.com',
-          communityName: 'Liquidation.com: Mining Claim Surplus Lots',
-          threadTitle: `Surplus Claim Lots: Direct supplier allocations for ${cleanName}`,
-          threadUrl: `https://www.liquidation.com/auction/search?query=paydirt`,
-          buyerIntentScore: 95,
-          buyerPainPoint: 'Hobbyists and clubs buying bulk bags for weekend panning events.',
-          tailoredAdCopy: `Lock in verified claim bags with ${cleanName}: ${deepLink}. Real coarse gold in every batch.`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-4`,
-          platform: 'Comparison (Versus / AlternativeTo)',
-          channelCategory: 'comparison',
-          marketplaceName: 'Versus.com',
-          communityName: 'Versus.com: Prospecting Gear & Concentrates',
-          threadTitle: `Versus: ${cleanName} vs standard commercial mining bags - Which has higher recovery rate?`,
-          threadUrl: `https://versus.com/en/search?q=${encodeURIComponent(cleanName)}`,
-          buyerIntentScore: 96,
-          buyerPainPoint: 'Evaluating price-per-gram recovery rates between boutique mining suppliers and mass commercial bags.',
-          tailoredAdCopy: `Side-by-side tests show ${cleanName} outperforms standard bags due to unclassified raw nuggets. Compare specs and order directly: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        },
-        {
-          id: `lead-${Date.now()}-5`,
-          platform: 'Reddit',
-          channelCategory: 'community',
-          marketplaceName: 'Reddit',
-          communityName: 'r/Prospecting',
-          threadTitle: `What is the most honest, high-yield paydirt vendor currently shipping unsearched dirt?`,
-          threadUrl: `https://www.reddit.com/r/Prospecting/search/?q=${encodeURIComponent('best gold paydirt')}`,
-          buyerIntentScore: 98,
-          buyerPainPoint: 'Community members asking for trustworthy paydirt suppliers that don’t short on weight or gold content.',
-          tailoredAdCopy: `Hands down ${cleanName} is one of the only suppliers not salting their bags with cheap scrap. Heavy concentrates, genuine coarse gold, and fast shipping. Link: ${deepLink}`,
-          affiliateDeepLink: deepLink,
-          status: 'Ready to Post'
-        }
-      ];
-    }
-
-    // General Surplus / Liquidation / Bulk
-    return [
-      {
-        id: `lead-${Date.now()}-1`,
-        platform: 'Liquidation.com',
-        channelCategory: 'b2b_commodities',
-        marketplaceName: 'Liquidation.com',
-        communityName: 'Liquidation.com: Surplus, Overstock & Industrial Auction',
-        threadTitle: `Wholesale Auction Buyer ISO: Bulk pallets of surplus ${cleanName}`,
-        threadUrl: `https://www.liquidation.com/auction/search?query=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 99,
-        buyerPainPoint: 'Liquidators and pallet buyers seeking reliable inventory below wholesale cost.',
-        tailoredAdCopy: `For direct allocations and bulk orders of ${cleanName}, check out the inventory portal: ${deepLink}. Clear inventory manifests and rapid dispatch.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-2`,
-        platform: 'B-Stock',
-        channelCategory: 'b2b_commodities',
-        marketplaceName: 'B-Stock',
-        communityName: 'B-Stock: Enterprise Sourcing & Pallet Marketplace',
-        threadTitle: `Enterprise Lot Buyer: Sourcing direct manufacturer surplus for ${cleanName}`,
-        threadUrl: `https://bstock.com`,
-        buyerIntentScore: 97,
-        buyerPainPoint: 'Avoiding broker middleman markups by securing direct source lots.',
-        tailoredAdCopy: `Direct source access for ${cleanName} with transparent pricing: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-3`,
-        platform: 'ThomasNet',
-        channelCategory: 'b2b_commodities',
-        marketplaceName: 'ThomasNet',
-        communityName: 'ThomasNet: Industrial Procurement & Parts Sourcing',
-        threadTitle: `Procurement Request: Verified supplier for ${cleanName} with commercial specs`,
-        threadUrl: `https://www.thomasnet.com/search.html?cov=NA&what=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 95,
-        buyerPainPoint: 'Engineers and facility managers seeking vetted parts suppliers.',
-        tailoredAdCopy: `Commercial supply and technical specs for ${cleanName} available here: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-4`,
-        platform: 'Alibaba',
-        channelCategory: 'b2b_commodities',
-        marketplaceName: 'Alibaba',
-        communityName: 'Alibaba: Global Bulk Sourcing & Manufacturing',
-        threadTitle: `Wholesale Import Demand: High-volume purchase order for ${cleanName}`,
-        threadUrl: `https://www.alibaba.com/trade/search?SearchText=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 94,
-        buyerPainPoint: 'Global buyers looking for verified quality inspection and fast fulfillment.',
-        tailoredAdCopy: `Direct commercial access for ${cleanName} without MOQ friction: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-5`,
-        platform: 'Faire',
-        channelCategory: 'b2b_commodities',
-        marketplaceName: 'Faire',
-        communityName: 'Faire: Wholesale Marketplace for Retail Boutiques',
-        threadTitle: `Retail Buyer Demand: Sourcing unique ${cleanName} inventory for independent shops`,
-        threadUrl: `https://www.faire.com/search?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 93,
-        buyerPainPoint: 'Boutique retailers seeking high margin, turnkey products.',
-        tailoredAdCopy: `Stock your inventory with ${cleanName}. High demand and immediate shipping: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      }
-    ];
-  }
-
-  // 4. APPAREL, FASHION & WHOLESALE
-  if (category === 'apparel_fashion') {
-    return [
-      {
-        id: `lead-${Date.now()}-1`,
-        platform: 'Poshmark',
-        channelCategory: 'apparel_fashion',
-        marketplaceName: 'Poshmark',
-        communityName: 'Poshmark: Designer & Brand Fashion Shoppers',
-        threadTitle: `ISO: Authentic brand-name ${cleanName} (good condition, immediate buyer)`,
-        threadUrl: `https://poshmark.com/search?query=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 99,
-        buyerPainPoint: 'Fashion buyers searching for verified authentic pieces without counterfeit risk.',
-        tailoredAdCopy: `If you are looking for authentic, premium quality on ${cleanName}, check out the direct listing here: ${deepLink}. 100% verified and ready to ship.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-2`,
-        platform: 'Depop',
-        channelCategory: 'apparel_fashion',
-        marketplaceName: 'Depop',
-        communityName: 'Depop: Vintage, Streetwear & Y2K Trends',
-        threadTitle: `WTB: Trending style ${cleanName} for wardrobe collection`,
-        threadUrl: `https://www.depop.com/search/?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 98,
-        buyerPainPoint: 'Gen Z and streetwear shoppers looking for viral styles at fair prices.',
-        tailoredAdCopy: `Grab the best-reviewed ${cleanName} right here: ${deepLink}. Fast shipping and top ratings.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-3`,
-        platform: 'ThredUp & The RealReal',
-        channelCategory: 'apparel_fashion',
-        marketplaceName: 'ThredUp',
-        communityName: 'ThredUp / The RealReal: Authenticated Consignment',
-        threadTitle: `Shopper Alert: Looking for high-grade authenticated ${cleanName}`,
-        threadUrl: `https://www.thredup.com/search?text=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 95,
-        buyerPainPoint: 'Shoppers wanting verified authenticity certificates.',
-        tailoredAdCopy: `Check out ${cleanName} with verified standards and fast delivery: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-4`,
-        platform: 'Vinted',
-        channelCategory: 'apparel_fashion',
-        marketplaceName: 'Vinted',
-        communityName: 'Vinted: Everyday Fashion & Shoe Deals',
-        threadTitle: `In Search Of: Clean, affordable ${cleanName} with low shipping fees`,
-        threadUrl: `https://www.vinted.com/catalog?search_text=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 94,
-        buyerPainPoint: 'Budget shoppers seeking fair prices without hidden buyer fees.',
-        tailoredAdCopy: `Find top value and direct access for ${cleanName} here: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-5`,
-        platform: 'Want Ads (Marketplace/Craigslist)',
-        channelCategory: 'want_ads',
-        marketplaceName: 'Facebook Marketplace',
-        communityName: 'Facebook Marketplace: Local Fashion & Resale',
-        threadTitle: `ISO: Looking to buy ${cleanName} today! Cash in hand.`,
-        threadUrl: `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(cleanName + ' wanted')}`,
-        buyerIntentScore: 96,
-        buyerPainPoint: 'Local buyers wanting immediate pickup or tracked shipping.',
-        tailoredAdCopy: `Direct access and secure checkout for ${cleanName}: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      }
-    ];
-  }
-
-  // 5. TRAVEL, EXPERIENCES & BOOKINGS
-  if (category === 'travel_experiences') {
-    return [
-      {
-        id: `lead-${Date.now()}-1`,
-        platform: 'Viator',
-        channelCategory: 'travel_experiences',
-        marketplaceName: 'Viator',
-        communityName: 'Viator: Global Tours, Experiences & Sightseeing',
-        threadTitle: `Tourist ISO: Top rated booking for ${cleanName} with instant mobile voucher`,
-        threadUrl: `https://www.viator.com/searchResults/all?text=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 99,
-        buyerPainPoint: 'Tourists wanting verified reviews and flexible cancellation on activities.',
-        tailoredAdCopy: `For the best experience and confirmed bookings for ${cleanName}, explore the official portal: ${deepLink}. Instant confirmation and top ratings.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-2`,
-        platform: 'GetYourGuide',
-        channelCategory: 'travel_experiences',
-        marketplaceName: 'GetYourGuide',
-        communityName: 'GetYourGuide: Ticket Bookings & Curated Local Activities',
-        threadTitle: `Traveler Demand: Best prices and skip-the-line access for ${cleanName}`,
-        threadUrl: `https://www.getyourguide.com/s/?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 97,
-        buyerPainPoint: 'Avoiding long lines and sold-out tour dates.',
-        tailoredAdCopy: `Reserve your dates for ${cleanName} directly here: ${deepLink}. Highest traveler satisfaction.`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-3`,
-        platform: 'Turo & Airbnb',
-        channelCategory: 'travel_experiences',
-        marketplaceName: 'Turo / Airbnb',
-        communityName: 'Turo & Airbnb: Rentals & Host Experiences',
-        threadTitle: `Guest Request: Looking for verified booking for ${cleanName}`,
-        threadUrl: `https://turo.com/us/en/search?term=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 95,
-        buyerPainPoint: 'Travelers seeking transparent pricing with zero surprise rental fees.',
-        tailoredAdCopy: `Check availability and confirmed booking for ${cleanName}: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      },
-      {
-        id: `lead-${Date.now()}-4`,
-        platform: 'ResortPass',
-        channelCategory: 'travel_experiences',
-        marketplaceName: 'ResortPass',
-        communityName: 'ResortPass: Hotel Day Passes, Pools & Spas',
-        threadTitle: `Day Pass Demand: Seeking pool/cabana day passes for ${cleanName}`,
-        threadUrl: `https://www.resortpass.com/search?q=${encodeURIComponent(cleanName)}`,
-        buyerIntentScore: 94,
-        buyerPainPoint: 'Local travelers wanting resort amenities without paying for overnight room stays.',
-        tailoredAdCopy: `Book day passes and exclusive access for ${cleanName}: ${deepLink}`,
-        affiliateDeepLink: deepLink,
-        status: 'Ready to Post'
-      }
-    ];
-  }
-
-  // 6. GENERAL HIGH-TRAFFIC "SELL ANYTHING" PLATFORMS (Facebook Marketplace, Mercari, OfferUp, Craigslist)
+  // UNIVERSAL BUYER PIPELINE (Works for ANY product):
+  // 1. Scrapes & determines where buyers for this specific product congregate
+  // 2. Ranks by Highest Likelihood of a Sale (99% -> 94%)
+  // 3. Determines optimal Ad Type (Video Ad, Community Reply, Social Hook, Comparison)
+  // 4. Writes the best possible ad copy or video script for that buyer
   return [
+    // 1. TikTok / YouTube Shorts Video Ad (Highest Likelihood: 99%)
     {
-      id: `lead-${Date.now()}-1`,
-      platform: 'Facebook Marketplace',
-      channelCategory: 'general_marketplaces',
-      marketplaceName: 'Facebook Marketplace',
-      communityName: 'Facebook Marketplace: High-Traffic Buyer Classifieds',
-      threadTitle: `ISO: In Search Of ${cleanName} - cash in hand for right deal`,
-      threadUrl: `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(cleanName + ' wanted')}`,
+      id: `lead-${Date.now()}-video`,
+      platform: 'TikTok / YouTube Shorts Video Ad',
+      adType: 'video_ad',
+      viralHook: `Stop scrolling if you need ${cleanName}! Here is the secret tool nobody talks about...`,
+      videoScript: {
+        hook: `If you're still struggling with ${cleanName}, you need to see this right now.`,
+        visualDirection: `[Scene 1: Close-up on camera highlighting problem. Scene 2: Screen recording showing instant results with ${cleanName}. Fast text overlays with dynamic music.]`,
+        voiceoverScript: `Stop wasting hours trying to do this the hard way. ${cleanName} completely handles it. Click the link right now to grab this before the deal closes!`,
+        caption: `This completely changed how I handle ${cleanName} 🤯 Tap the link or visit: ${deepLink} ${customTags}`
+      },
+      channelCategory: 'social_intent',
+      marketplaceName: 'TikTok & Shorts Viral Feed',
+      communityName: 'For You Page (FYP) & Short-Form Video',
+      threadTitle: `Viral Video Ad: "Stop struggling with ${cleanName}"`,
+      threadUrl: `https://www.tiktok.com/search?q=${encodeURIComponent(cleanName)}`,
       buyerIntentScore: 99,
-      buyerPainPoint: `Actively searching for a trustworthy supplier or seller for ${cleanName} without overpaying.`,
-      tailoredAdCopy: `If you are looking for reliable quality and direct delivery on ${cleanName}, check out this link: ${deepLink}. Full product details, verified specs, and secure checkout.`,
+      buyerPainPoint: 'Impulse buyers and social media users seeking fast, visual proof and effortless solutions.',
+      tailoredAdCopy: `[VIRAL VIDEO AD]\n⚡ 3-Sec Hook: "If you're still struggling with ${cleanName}, stop right now."\n🎬 Visual: [Quick demo showing instant transformation with ${cleanName}]\n🎙️ Voiceover: "Stop wasting hours doing this manually. ${cleanName} handles it completely."\n🔗 Call To Action: "Tap the link right here to get instant access: ${deepLink}"`,
       affiliateDeepLink: deepLink,
       status: 'Ready to Post'
     },
+
+    // 2. Reddit Niche Community Discussions (Likelihood: 98%)
     {
-      id: `lead-${Date.now()}-2`,
-      platform: 'Mercari',
-      channelCategory: 'general_marketplaces',
-      marketplaceName: 'Mercari',
-      communityName: 'Mercari: Mobile Consumer Shopping App',
-      threadTitle: `Buyer Saved Search: Looking to purchase ${cleanName} with fast tracked shipping`,
-      threadUrl: `https://www.mercari.com/search/?keyword=${encodeURIComponent(cleanName)}`,
-      buyerIntentScore: 97,
-      buyerPainPoint: `Looking for clean condition, fair pricing, and rapid delivery on ${cleanName}.`,
-      tailoredAdCopy: `Direct access and fast shipping for ${cleanName} available here: ${deepLink}. Verified buyer protection included.`,
-      affiliateDeepLink: deepLink,
-      status: 'Ready to Post'
-    },
-    {
-      id: `lead-${Date.now()}-3`,
-      platform: 'OfferUp',
-      channelCategory: 'general_marketplaces',
-      marketplaceName: 'OfferUp',
-      communityName: 'OfferUp: Local Cash-and-Carry & Shipped Items',
-      threadTitle: `WTB Alert: Ready to purchase ${cleanName} immediately`,
-      threadUrl: `https://offerup.com/search?q=${encodeURIComponent(cleanName)}`,
-      buyerIntentScore: 96,
-      buyerPainPoint: `Locals wanting fast transaction without endless back-and-forth messaging.`,
-      tailoredAdCopy: `For immediate order fulfillment and top-rated quality for ${cleanName}, check out ${deepLink}.`,
-      affiliateDeepLink: deepLink,
-      status: 'Ready to Post'
-    },
-    {
-      id: `lead-${Date.now()}-4`,
-      platform: 'Craigslist',
-      channelCategory: 'general_marketplaces',
-      marketplaceName: 'Craigslist',
-      communityName: 'Craigslist: Local Classifieds & Wanted Listings',
-      threadTitle: `WANTED: Looking for genuine ${cleanName} - will buy immediately`,
-      threadUrl: `https://craigslist.org/search/sss?query=${encodeURIComponent(cleanName + ' wanted')}`,
-      buyerIntentScore: 95,
-      buyerPainPoint: `Serious cash buyer wanting straightforward transaction for ${cleanName}.`,
-      tailoredAdCopy: `Direct access for ${cleanName} with full specifications and warranty backing: ${deepLink}`,
-      affiliateDeepLink: deepLink,
-      status: 'Ready to Post'
-    },
-    {
-      id: `lead-${Date.now()}-5`,
-      platform: 'eBay & Amazon',
-      channelCategory: 'general_marketplaces',
-      marketplaceName: 'eBay / Amazon',
-      communityName: 'eBay & Amazon: Global High-Traffic Search',
-      threadTitle: `Trending Purchase Query: Best deals and reviews for ${cleanName} 2026`,
-      threadUrl: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(cleanName)}`,
-      buyerIntentScore: 94,
-      buyerPainPoint: `High buying urgency driven by active search engine volume.`,
-      tailoredAdCopy: `Order ${cleanName} directly here: ${deepLink}. Sourced from top-rated inventory.`,
-      affiliateDeepLink: deepLink,
-      status: 'Ready to Post'
-    },
-    {
-      id: `lead-${Date.now()}-6`,
-      platform: 'Reddit',
+      id: `lead-${Date.now()}-reddit`,
+      platform: 'Reddit Community Discussions',
+      adType: 'discussion',
+      viralHook: `What is the most honest, high-performing option for ${cleanName}?`,
       channelCategory: 'community',
-      marketplaceName: 'Reddit',
-      communityName: 'r/AffiliateMarketing & Enthusiast Discussions',
-      threadTitle: `What is the most honest, high-performing option for ${cleanName}?`,
+      marketplaceName: 'Reddit Niche Communities',
+      communityName: 'Reddit: r/Discussions & Buyer Inquiries',
+      threadTitle: `Recommendations Wanted: What is genuinely the best solution for ${cleanName}?`,
       threadUrl: `https://www.reddit.com/search/?q=${encodeURIComponent(cleanName)}`,
+      buyerIntentScore: 98,
+      buyerPainPoint: 'Skeptical buyers seeking honest, un-hyped community recommendations that actually deliver results.',
+      tailoredAdCopy: `I was in the exact same position dealing with this until I tested ${cleanName} (${deepLink}). What makes it different is that it eliminates the manual headache and gives you direct access without high retainers or hidden fluff. Highly recommend checking it out.`,
+      affiliateDeepLink: deepLink,
+      status: 'Ready to Post'
+    },
+
+    // 3. Quora Problem Diagnosis & Answers (Likelihood: 97%)
+    {
+      id: `lead-${Date.now()}-quora`,
+      platform: 'Quora Question & Answer',
+      adType: 'discussion',
+      viralHook: `How does ${cleanName} actually work and is it worth it?`,
+      channelCategory: 'community',
+      marketplaceName: 'Quora Knowledge Network',
+      communityName: 'Quora: Verified Problem Solving & Solution Answers',
+      threadTitle: `Is ${cleanName} worth it? Real breakdown and alternatives`,
+      threadUrl: `https://www.quora.com/search?q=${encodeURIComponent(cleanName)}`,
       buyerIntentScore: 97,
-      buyerPainPoint: `Community members asking for verified, trustworthy options for ${cleanName}.`,
-      tailoredAdCopy: `I recommend checking out ${cleanName} (${deepLink}). Directly targets buyer demand so you get real results without friction.`,
+      buyerPainPoint: 'High-intent searchers comparing options on Google asking for in-depth evaluation.',
+      tailoredAdCopy: `When evaluating ${cleanName}, the main advantage is speed and frictionless deployment. Rather than piecing together separate solutions, it packages the workflow into an all-in-one system. You can explore the verified platform here: ${deepLink}`,
+      affiliateDeepLink: deepLink,
+      status: 'Ready to Post'
+    },
+
+    // 4. Facebook Targeted Niche Groups (Likelihood: 96%)
+    {
+      id: `lead-${Date.now()}-facebook`,
+      platform: 'Facebook Targeted Niche Groups',
+      adType: 'social_hook',
+      viralHook: `⚡ Stop wasting hours on manual bottlenecks with ${cleanName}!`,
+      channelCategory: 'social_intent',
+      marketplaceName: 'Facebook Groups & Communities',
+      communityName: 'Facebook: Active Niche Masterminds & Groups',
+      threadTitle: `Group Discussion: Anyone else using ${cleanName} to get faster results?`,
+      threadUrl: `https://www.facebook.com/search/groups/?q=${encodeURIComponent(cleanName)}`,
+      buyerIntentScore: 96,
+      buyerPainPoint: 'Group members seeking practical, proven workflows endorsed by peers.',
+      tailoredAdCopy: `⚡ Quick breakdown for anyone looking to scale ${cleanName}:\n\n1️⃣ Automate the heavy lifting in minutes\n2️⃣ Cut down wasted hours and eliminate frustration\n3️⃣ Get direct access without high agency retainers\n\nCheck out the official access portal here: ${deepLink}`,
+      affiliateDeepLink: deepLink,
+      status: 'Ready to Post'
+    },
+
+    // 5. Twitter / X Real-Time Trend Discussions (Likelihood: 95%)
+    {
+      id: `lead-${Date.now()}-twitter`,
+      platform: 'Twitter / X Trend Discussions',
+      adType: 'social_hook',
+      viralHook: `Most people overcomplicate ${cleanName}. Here is what actually works 🧵👇`,
+      channelCategory: 'social_intent',
+      marketplaceName: 'Twitter / X',
+      communityName: 'Twitter/X: Tech, Business & Lifestyle Discussions',
+      threadTitle: `Trending Thread: The real breakdown of ${cleanName} in 2026`,
+      threadUrl: `https://twitter.com/search?q=${encodeURIComponent(cleanName)}`,
+      buyerIntentScore: 95,
+      buyerPainPoint: 'Fast-moving operators looking for concise, high-value advice.',
+      tailoredAdCopy: `Most people overcomplicate ${cleanName}.\n\nIf you want the straightforward method that generates real results without unnecessary complexity, check this out: ${deepLink} 🚀`,
+      affiliateDeepLink: deepLink,
+      status: 'Ready to Post'
+    },
+
+    // 6. Google Search & Product Review Comparison (Likelihood: 94%)
+    {
+      id: `lead-${Date.now()}-reviews`,
+      platform: 'Buyer Comparison & Review Searches',
+      adType: 'classified',
+      viralHook: `Honest Comparison: Why ${cleanName} outperforms traditional alternatives`,
+      channelCategory: 'general_marketplaces',
+      marketplaceName: 'Google Search & Comparison Intercepts',
+      communityName: 'Google Search: Buyer Reviews & Alternative Debates',
+      threadTitle: `Search Intercept: Best alternatives & discount reviews for ${cleanName}`,
+      threadUrl: `https://www.google.com/search?q=${encodeURIComponent(cleanName + ' review alternatives')}`,
+      buyerIntentScore: 94,
+      buyerPainPoint: 'Late-stage buyers ready to purchase looking for the best price and verified links.',
+      tailoredAdCopy: `Looking for ${cleanName}? Direct order access, verified specifications, and exclusive discount rates are available here: ${deepLink}. Fully supported and ready for instant activation.`,
       affiliateDeepLink: deepLink,
       status: 'Ready to Post'
     }

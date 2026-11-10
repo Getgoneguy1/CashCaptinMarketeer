@@ -57,12 +57,14 @@ export const TIER_LIMITS = {
 };
 
 const DEFAULT_USER_LICENSE: UserLicenseState = {
-  tier: 'starter',
-  licenseKey: undefined,
-  totalSlotsAllowed: 3,
+  tier: 'lifetime',
+  licenseKey: 'CASH-CAPTAIN-AUTOMATED-FULL-ACCESS',
+  customerName: 'Ty Birchfield',
+  customerEmail: 'yeahwegotthat@proton.me',
+  totalSlotsAllowed: 999999,
   consumedSlots: [],
-  maxLeadsPerProduct: 5,
-  maxChannelsPerProduct: 2
+  maxLeadsPerProduct: 999999,
+  maxChannelsPerProduct: 999999
 };
 
 export function getUserLicense(): UserLicenseState {
@@ -70,10 +72,13 @@ export function getUserLicense(): UserLicenseState {
     const raw = localStorage.getItem(USER_LICENSE_KEY);
     if (raw) {
       const parsed: UserLicenseState = JSON.parse(raw);
-      // Ensure data integrity
       return {
         ...DEFAULT_USER_LICENSE,
         ...parsed,
+        tier: 'lifetime',
+        totalSlotsAllowed: 999999,
+        maxLeadsPerProduct: 999999,
+        maxChannelsPerProduct: 999999,
         consumedSlots: Array.isArray(parsed.consumedSlots) ? parsed.consumedSlots : []
       };
     }
@@ -93,47 +98,21 @@ export function saveUserLicense(state: UserLicenseState): void {
 
 /**
  * Checks if user can deploy a new product campaign.
- * Permanent slot model: Deleting an offer does NOT restore a consumed slot,
- * preventing users from recycling 3 slots indefinitely.
+ * Automated 100% full usage: always allowed with unlimited capacity.
  */
-export function canDeployNewOffer(isMasterUser: boolean): {
+export function canDeployNewOffer(_isMasterUser?: boolean): {
   allowed: boolean;
   consumedCount: number;
   totalAllowed: number;
   remainingSlots: number;
   tier: LicenseTier;
 } {
-  if (isMasterUser) {
-    return {
-      allowed: true,
-      consumedCount: 0,
-      totalAllowed: 999999,
-      remainingSlots: 999999,
-      tier: 'master_developer'
-    };
-  }
-
-  const lic = getUserLicense();
-  if (lic.tier === 'lifetime' || lic.tier === 'master_developer') {
-    return {
-      allowed: true,
-      consumedCount: lic.consumedSlots.length,
-      totalAllowed: 999999,
-      remainingSlots: 999999,
-      tier: lic.tier
-    };
-  }
-
-  const consumed = lic.consumedSlots.length;
-  const total = lic.totalSlotsAllowed;
-  const remaining = Math.max(0, total - consumed);
-
   return {
-    allowed: consumed < total,
-    consumedCount: consumed,
-    totalAllowed: total,
-    remainingSlots: remaining,
-    tier: lic.tier
+    allowed: true,
+    consumedCount: 0,
+    totalAllowed: 999999,
+    remainingSlots: 999999,
+    tier: 'lifetime'
   };
 }
 
@@ -294,29 +273,40 @@ export function activateLicenseKey(inputKey: string, userEmail?: string): {
     };
   }
 
+  // Free / Sponsor / Trial / Test Group Keys issued by Ty
+  if (
+    cleanKey.includes('SPONSOR') ||
+    cleanKey.includes('FREE') ||
+    cleanKey.includes('TRIAL') ||
+    cleanKey.includes('TEST') ||
+    cleanKey.includes('COMP')
+  ) {
+    const currentLic = getUserLicense();
+    const updatedState: UserLicenseState = {
+      ...currentLic,
+      tier: 'lifetime',
+      licenseKey: cleanKey,
+      totalSlotsAllowed: 999999,
+      maxLeadsPerProduct: 999999,
+      maxChannelsPerProduct: 999999,
+      activatedAt: new Date().toISOString()
+    };
+    saveUserLicense(updatedState);
+    return {
+      success: true,
+      message: 'Complimentary Access Key Activated! Unlimited campaign slots and all 38+ buyer radar channels unlocked.',
+      tier: 'lifetime'
+    };
+  }
+
   return {
     success: false,
-    message: 'Invalid license key. Please check the key provided in your PayPal confirmation or contact support.'
+    message: 'Invalid license key. Please check the key provided in your confirmation or enter a valid access code.'
   };
 }
 
-/**
- * Checks whether user has already purchased a paid license to Cash Captain.
- * Licensed users receive 50% VIP discount on AI Hub & AI Assistant add-ons.
- */
-export function isCashCaptainLicenseHolder(userLicense?: UserLicenseState, isMasterUser?: boolean): boolean {
-  if (isMasterUser) return true;
-  const lic = userLicense || getUserLicense();
-  if (lic.tier === 'pro' || lic.tier === 'lifetime' || lic.tier === 'master_developer') {
-    return true;
-  }
-  if (lic.licenseKey && lic.licenseKey.trim().length > 0) {
-    return true;
-  }
-  if (lic.activatedAt) {
-    return true;
-  }
-  return false;
+export function isCashCaptainLicenseHolder(_userLicense?: UserLicenseState, _isMasterUser?: boolean): boolean {
+  return true;
 }
 
 export interface AddonAppState {
@@ -330,31 +320,14 @@ export interface AddonAppState {
 
 const ADDON_STORAGE_PREFIX = 'cashcaptain_addon_';
 
-export function getAddonAppState(appId: 'hub' | 'viral', isMasterUser?: boolean): AddonAppState {
-  if (isMasterUser) {
-    return {
-      isSubscribed: true,
-      isSignedIn: true,
-      userEmail: 'yeahwegotthat@proton.me',
-      isLinked: true,
-      licenseKey: 'MASTER-SUITE-UNLOCKED',
-      activatedAt: new Date().toISOString()
-    };
-  }
-
-  try {
-    const raw = localStorage.getItem(`${ADDON_STORAGE_PREFIX}${appId}`);
-    if (raw) {
-      return JSON.parse(raw);
-    }
-  } catch (e) {
-    console.error(`Failed to load ${appId} state`, e);
-  }
-
+export function getAddonAppState(_appId: 'hub' | 'viral', _isMasterUser?: boolean): AddonAppState {
   return {
-    isSubscribed: false,
-    isSignedIn: false,
-    isLinked: false
+    isSubscribed: true,
+    isSignedIn: true,
+    userEmail: 'yeahwegotthat@proton.me',
+    isLinked: true,
+    licenseKey: 'CASH-CAPTAIN-SUITE-UNLOCKED',
+    activatedAt: new Date().toISOString()
   };
 }
 
