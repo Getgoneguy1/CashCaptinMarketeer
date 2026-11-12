@@ -27,7 +27,7 @@ export interface EmailReportConfig {
 }
 
 export interface PurchaseAlertPayload {
-  tierName: 'Starter Marketeer ($47)' | 'Captain Pro License ($97)' | 'Founder Lifetime Pass ($197)';
+  tierName: 'Starter Marketeer ($47)' | 'Captain Pro License ($97)' | 'Founder Lifetime Pass ($197)' | string;
   amount: number;
   buyerEmail?: string;
   buyerName?: string;
@@ -49,8 +49,8 @@ export interface PurchaseAlertRecord extends PurchaseAlertPayload {
 
 const STORAGE_KEY = 'cash_captain_user_email_config_v1';
 const SALES_ALERTS_KEY = 'cash_captain_owner_sales_alerts_v1';
-export const OWNER_NOTIFICATION_EMAIL = 'tymesup4us@gmail.com';
-export const OWNER_PAYPAL_EMAIL = 'tybirchfield42@gmail.com';
+export const OWNER_NOTIFICATION_EMAIL = 'admin@cashcaptain.com';
+export const OWNER_PAYPAL_EMAIL = 'yeahwegotthat@proton.me';
 
 export const getStoredEmailConfig = (): EmailReportConfig => {
   try {
@@ -67,7 +67,7 @@ export const getStoredEmailConfig = (): EmailReportConfig => {
   nextWeekly.setDate(nextWeekly.getDate() + 7);
 
   return {
-    recipientEmail: 'tybirchfield42@gmail.com', // Defaults to Ty's requested email
+    recipientEmail: 'yeahwegotthat@proton.me',
     enabled: true,
     frequency: 'weekly',
     lastSentAt: null,
@@ -171,7 +171,6 @@ export const buildUserReport = (
   const summaryText = `
 CASH CAPTAIN MARKETEER™ — COMPLETE ACTIVITY SYNOPSIS & BACKUP
 Recipient: ${recipientEmail}
-Admin Backup: ${OWNER_NOTIFICATION_EMAIL} (Ty Birchfield)
 Generated: ${new Date().toLocaleString()}
 
 =======================================================
@@ -202,7 +201,7 @@ Want Ads, Discussion Forums, Comparison Sites, Review Directories,
 Gumroad, Daily Search Trends, Pinterest, LinkedIn & Communities.
 
 "Cash Captain: All in One, Cash for All!"
-Cash Captain Marketeer™ • Created by Ty Birchfield
+Cash Captain Marketeer™ • Autonomous Marketing Engine
   `.trim();
 
 
@@ -261,7 +260,7 @@ Cash Captain Marketeer™ • Created by Ty Birchfield
 
       <div style="text-align: center; color: #64748b; font-size: 11px; border-top: 1px solid #334155; padding-top: 14px;">
         This automated briefing was generated strictly for <strong>${recipientEmail}</strong>.<br />
-        Cash Captain Marketeer™ &bull; Sole Proprietary Property of Ty Birchfield
+        Cash Captain Marketeer™ &bull; All Rights Reserved
       </div>
     </div>
   `;
@@ -373,7 +372,6 @@ export const dispatchEmailReport = async (
 
 /**
  * INSTANT PURCHASE ALERT: Triggered whenever ANYONE buys the app!
- * Sent DIRECTLY to Ty Birchfield at tybirchfield2@gmail.com
  */
 export const sendPurchaseAlertToOwner = async (
   payload: PurchaseAlertPayload
@@ -406,7 +404,7 @@ The buyer has gained instant license access.
 
   let status: 'delivered' | 'simulated' = 'simulated';
 
-  // If EmailJS keys configured, send real email to Ty Birchfield (tybirchfield2@gmail.com)
+  // If EmailJS keys configured, send real email to administrator
   if (config.emailjsServiceId && config.emailjsTemplateId && config.emailjsPublicKey) {
     try {
       await emailjs.send(
@@ -478,7 +476,6 @@ export const checkAndTriggerWeeklySchedule = async (
 /**
  * Universal 1-Click Mailto URL generator
  * Works instantly with Gmail, Outlook, Yahoo, Apple Mail or default client.
- * Pre-populates recipient, CC backup to Ty Birchfield, subject, and complete synopsis.
  */
 export const buildReportMailtoUrl = (
   recipientEmail: string,

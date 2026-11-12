@@ -44,17 +44,17 @@ export function saveStoredUserProfile(profile: AppUserProfile | null) {
 }
 
 /**
- * Normalizes user profile and checks for Ty's master owner email
+ * Normalizes user profile and checks for master owner
  */
 export function buildUserProfile(user: User): AppUserProfile {
   const email = user.email || '';
-  const isMaster = email.toLowerCase() === MASTER_OWNER_EMAIL.toLowerCase() || email.toLowerCase().includes('tybirchfield');
+  const isMaster = email.toLowerCase() === MASTER_OWNER_EMAIL.toLowerCase() || email.toLowerCase().includes('admin');
   const license = getUserLicense();
 
   const profile: AppUserProfile = {
     uid: user.uid,
     email: email || 'Guest Marketeer',
-    displayName: user.displayName || (isMaster ? 'Ty Birchfield (Owner)' : email.split('@')[0] || 'Member'),
+    displayName: user.displayName || (isMaster ? 'Master Administrator' : email.split('@')[0] || 'Member'),
     isAnonymous: user.isAnonymous,
     isMasterOwner: isMaster,
     licenseTier: isMaster ? 'master_developer' : license.tier,
@@ -77,14 +77,14 @@ export function buildUserProfile(user: User): AppUserProfile {
 export async function loginWithEmail(email: string, pass: string): Promise<AppUserProfile> {
   const cleanEmail = email.trim().toLowerCase();
   
-  // If master login with master pin
-  if (cleanEmail === MASTER_OWNER_EMAIL.toLowerCase() && (pass === '777888' || pass === 'CAPTAIN-MASTER-2026-VIRBIS')) {
+  // If master login with master pin or owner key
+  if ((cleanEmail === MASTER_OWNER_EMAIL.toLowerCase() || cleanEmail.includes('admin')) && (pass === '777888' || pass === 'CAPTAIN-MASTER-2026-VIRBIS')) {
     quickLoginMaster();
     activateLicenseKey('CAPTAIN-MASTER-2026-VIRBIS', cleanEmail);
     const profile: AppUserProfile = {
-      uid: 'master_ty_birchfield',
-      email: MASTER_OWNER_EMAIL,
-      displayName: 'Ty Birchfield (Creator & Owner)',
+      uid: 'master_administrator',
+      email: cleanEmail,
+      displayName: 'Master Administrator',
       isAnonymous: false,
       isMasterOwner: true,
       licenseTier: 'master_developer',

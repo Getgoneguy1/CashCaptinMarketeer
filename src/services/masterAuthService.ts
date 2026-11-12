@@ -5,9 +5,9 @@ const MASTER_PIN_KEY = 'cashcaptin_master_pin';
 const LICENSES_KEY = 'cashcaptin_generated_licenses';
 const APP_SETTINGS_KEY = 'cashcaptin_master_app_settings';
 
-// Master Owner Defaults
-export const MASTER_OWNER_EMAIL = 'tymesup4us@gmail.com';
-export const MASTER_OWNER_NAME = 'Ty Birchfield';
+// Master Owner Defaults (Generic Administrator)
+export const MASTER_OWNER_EMAIL = 'admin@cashcaptain.com';
+export const MASTER_OWNER_NAME = 'Master Administrator';
 export const DEFAULT_MASTER_KEY = 'CAPTAIN-MASTER-2026-VIRBIS';
 export const DEFAULT_MASTER_PIN = '777888';
 
@@ -52,7 +52,7 @@ export function getMasterAppSettings(): MasterAppSettings {
         parsed.liveDomain = currentOrigin;
       }
       // Ensure business payment address is set to official yeahwegotthat@proton.me
-      if (!parsed.paypalEmail || parsed.paypalEmail.includes('tybirchfield42')) {
+      if (!parsed.paypalEmail || !parsed.paypalEmail.includes('@') || parsed.paypalEmail.includes('ty')) {
         parsed.paypalEmail = 'yeahwegotthat@proton.me';
       }
       return { ...DEFAULT_APP_SETTINGS, ...parsed };
@@ -139,8 +139,8 @@ export function loginWithMasterCredentials(email: string, keyOrPin: string): boo
   const cleanKey = keyOrPin.trim();
   const activePin = getMasterPin();
 
-  // Validate either Ty's email with PIN/Key OR direct Master Key
-  const isEmailMatch = cleanEmail === MASTER_OWNER_EMAIL || cleanEmail === 'virbis.com' || cleanEmail.includes('tymesup');
+  // Validate either Master Admin email with PIN/Key OR direct Master Key
+  const isEmailMatch = cleanEmail === MASTER_OWNER_EMAIL || cleanEmail.includes('admin');
   const isKeyMatch =
     cleanKey === activePin ||
     cleanKey === DEFAULT_MASTER_PIN ||
@@ -189,28 +189,7 @@ export function logoutMaster(): void {
 }
 
 // License Key Minting & Management
-const INITIAL_LICENSES: GeneratedLicenseKey[] = [
-  {
-    id: 'lic-master-001',
-    key: 'CCM-7A8B-9C0D-TY01',
-    customerName: 'Ty Birchfield (Master Account)',
-    customerEmail: 'tymesup4us@gmail.com',
-    createdAt: '2026-10-30T10:00:00.000Z',
-    plan: 'Lifetime Master',
-    status: 'Active',
-    activationsCount: 1
-  },
-  {
-    id: 'lic-demo-002',
-    key: 'CCM-VIP-COMMERCIAL-99',
-    customerName: 'Virbis Enterprise Station',
-    customerEmail: 'support@virbis.com',
-    createdAt: '2026-10-30T11:00:00.000Z',
-    plan: 'Commercial Agency',
-    status: 'Active',
-    activationsCount: 1
-  }
-];
+const INITIAL_LICENSES: GeneratedLicenseKey[] = [];
 
 export function getGeneratedLicenses(): GeneratedLicenseKey[] {
   try {

@@ -436,6 +436,8 @@ export const App: React.FC = () => {
               affiliateProConfig={affiliateProConfig}
               onRecordClick={handleRecordClick}
               onOpenEmailModal={() => setShowEmailModal(true)}
+              onOpenLicenseModal={() => setShowLicenseModal(true)}
+              onNavigateTab={(tab) => setActiveTab(tab)}
               isMasterUser={true}
             />
           </div>
@@ -707,15 +709,6 @@ export const App: React.FC = () => {
             </span>
             <span>&bull;</span>
             <span>All Rights Reserved</span>
-            {/* Subtle security portal */}
-            <button
-              onClick={() => setShowMasterModal(true)}
-              className="text-slate-600 hover:text-slate-400 transition-colors p-1 cursor-pointer"
-              title="Security Portal"
-              aria-label="Security Portal"
-            >
-              <Lock className="w-3 h-3" />
-            </button>
           </div>
         </div>
       </footer>

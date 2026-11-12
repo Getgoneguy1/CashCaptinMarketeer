@@ -45,6 +45,7 @@ import {
   getUserLicense,
   TIER_LIMITS
 } from '../services/userLicenseService';
+import { NavTab } from './Header';
 
 interface AutoPilotRadarProps {
   existingOffers: Offer[];
@@ -54,6 +55,7 @@ interface AutoPilotRadarProps {
   onOpenEmailModal?: () => void;
   isMasterUser?: boolean;
   onOpenLicenseModal?: () => void;
+  onNavigateTab?: (tab: NavTab) => void;
 }
 
 export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
@@ -63,7 +65,8 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   onRecordClick,
   onOpenEmailModal,
   isMasterUser,
-  onOpenLicenseModal
+  onOpenLicenseModal,
+  onNavigateTab
 }) => {
   // Clean input form state ready for user's own affiliate offers
   const [productName, setProductName] = useState('');
@@ -74,7 +77,7 @@ export const AutoPilotRadar: React.FC<AutoPilotRadarProps> = ({
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [videoFileName, setVideoFileName] = useState<string | null>(null);
   const [vidofyAffiliateUrl, setVidofyAffiliateUrl] = useState<string>(() => {
-    return localStorage.getItem('cashcaptain_vidofy_affiliate_url') || 'https://vidofy.ai/?aff=ty-birchfield-7200';
+    return localStorage.getItem('cashcaptain_vidofy_affiliate_url') || 'https://vidofy.ai/?aff=cashcaptain';
   });
   const [copiedVidofyScriptId, setCopiedVidofyScriptId] = useState<string | null>(null);
   const [isEditingVidofyUrl, setIsEditingVidofyUrl] = useState<boolean>(false);
@@ -288,7 +291,7 @@ AFFILIATE LINK: ${lead.affiliateDeepLink || targetUrl || 'https://example.com'}`
   };
 
   const handleSaveVidofyUrl = (newUrl: string) => {
-    const cleaned = newUrl.trim() || 'https://vidofy.ai/?aff=ty-birchfield-7200';
+    const cleaned = newUrl.trim() || 'https://vidofy.ai/?aff=cashcaptain';
     setVidofyAffiliateUrl(cleaned);
     localStorage.setItem('cashcaptain_vidofy_affiliate_url', cleaned);
     setIsEditingVidofyUrl(false);
@@ -323,96 +326,107 @@ AFFILIATE LINK: ${lead.affiliateDeepLink || targetUrl || 'https://example.com'}`
 
         {/* Input Form */}
         <form onSubmit={handleLaunchAutoPilot} className="space-y-4">
+          {/* Input Form: 1. Product -> 2. Description & Tags -> 3. The Link -> 4. Picture & Video in same box */}
+          {/* 1. Product */}
+          <div>
+            <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+              Product Name *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g., Any Product, Service, SaaS, Physical Good, Course, or Offer"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner font-semibold placeholder:text-slate-600"
+            />
+          </div>
+
+          {/* 2. Description & Tags */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <div className="md:col-span-5">
+            <div className="md:col-span-8">
               <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                Product Name *
+                Product Description / What Problem Does It Solve?
               </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g., AI Copywriter Pro or Video Automator"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner font-semibold placeholder:text-slate-600"
+              <textarea
+                rows={2}
+                placeholder="e.g., Describe what your product or service does, the pain point it fixes, or key benefits for buyers..."
+                value={productDescription}
+                onChange={(e) => setProductDescription(e.target.value)}
+                className="w-full px-4 py-2.5 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner resize-y placeholder:text-slate-600"
               />
             </div>
 
             <div className="md:col-span-4">
               <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                Your Product or Affiliate Link *
-              </label>
-              <input
-                type="url"
-                required
-                placeholder="https://your-product-link.com"
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-emerald-400 font-bold placeholder:text-slate-600"
-              />
-            </div>
-
-            <div className="md:col-span-3">
-              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Product Hashtags / Keywords (Optional)
               </label>
               <input
                 type="text"
-                placeholder="e.g. #marketing #ai #deals"
+                placeholder="e.g. #marketing #deals #gadgets"
                 value={productHashtags}
                 onChange={(e) => setProductHashtags(e.target.value)}
-                className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-sky-400 placeholder:text-slate-600"
+                className="w-full px-4 py-2.5 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-sky-400 placeholder:text-slate-600"
               />
+              <p className="text-[11px] text-slate-500 mt-1">Tags for search matching and social hashtags</p>
             </div>
           </div>
 
+          {/* 3. The Link */}
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Product Description / What Problem Does It Solve?
+              Your Product or Affiliate Link *
             </label>
-            <textarea
-              rows={2}
-              placeholder="e.g., Autonomous B2B content marketing platform that conducts keyword research, writes expert-level technical articles, publishes automatically, and captures inbound qualified leads..."
-              value={productDescription}
-              onChange={(e) => setProductDescription(e.target.value)}
-              className="w-full px-4 py-2.5 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 shadow-inner resize-y placeholder:text-slate-600"
+            <input
+              type="url"
+              required
+              placeholder="https://your-product-link.com"
+              value={targetUrl}
+              onChange={(e) => setTargetUrl(e.target.value)}
+              className="w-full px-4 py-3 bg-[#060913] border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 font-mono shadow-inner text-emerald-400 font-bold placeholder:text-slate-600"
             />
           </div>
 
-          {/* Product Picture Input (Upload or Image URL) */}
-          <div className="bg-[#060913] p-4 rounded-xl border border-slate-800 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wider">
-                <ImageIcon className="w-4 h-4 text-emerald-400" />
-                Product Picture / Ad Creative (Optional)
-              </label>
-              {imagePreview && (
-                <button
-                  type="button"
-                  onClick={() => setImagePreview(null)}
-                  className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer transition"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Remove Picture
-                </button>
-              )}
+          {/* 4. Single Box for Picture and Video Upload Buttons */}
+          <div className="bg-[#060913] p-4 rounded-xl border border-slate-800 space-y-3.5">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <span className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Media: Picture &amp; Video (Optional)</span>
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-              <div className={imagePreview ? 'sm:col-span-9 space-y-2' : 'sm:col-span-12 space-y-2'}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Picture Upload & URL */}
+              <div className="space-y-2 p-3 rounded-lg bg-slate-900/50 border border-slate-800/80">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                    <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Picture (Optional)</span>
+                  </label>
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      onClick={() => setImagePreview(null)}
+                      className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer transition"
+                    >
+                      <X className="w-3 h-3" />
+                      Remove
+                    </button>
+                  )}
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="url"
-                      placeholder="Paste direct Image URL (e.g. https://.../product.png)"
-                      value={imagePreview?.startsWith('data:') ? '' : imagePreview || ''}
-                      onChange={(e) => setImagePreview(e.target.value.trim() || null)}
-                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#475569] rounded-lg text-white text-xs focus:outline-none focus:border-[#3b82f6] placeholder:text-[#64748b]"
-                    />
-                  </div>
-                  <label className="px-3.5 py-2 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                  <input
+                    type="url"
+                    placeholder="Paste Image URL"
+                    value={imagePreview?.startsWith('data:') ? '' : imagePreview || ''}
+                    onChange={(e) => setImagePreview(e.target.value.trim() || null)}
+                    className="flex-1 px-3 py-2 bg-[#1e293b] border border-[#475569] rounded-lg text-white text-xs focus:outline-none focus:border-[#3b82f6] placeholder:text-[#64748b]"
+                  />
+                  <label className="px-3 py-2 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
                     <Upload className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Upload Image File</span>
+                    <span>Upload Picture</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -432,56 +446,44 @@ AFFILIATE LINK: ${lead.affiliateDeepLink || targetUrl || 'https://example.com'}`
                     />
                   </label>
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  Attached product pictures are embedded into shoppable feed ads (Instagram, Pinterest, Google Shopping, Facebook Marketplace, and Classifieds). Supports direct uploads (PNG, JPG, WebP) or web image URLs.
+
+                {imagePreview && (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/50 bg-black">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <p className="text-[11px] text-slate-400 leading-snug">
+                  Attached product pictures are embedded into shoppable feed ads (Instagram, Pinterest, Google Shopping, Facebook Marketplace, and Classifieds). Supports direct uploads or image URLs.
                 </p>
               </div>
 
-              {imagePreview && (
-                <div className="sm:col-span-3 flex items-center justify-center">
-                  <div className="relative group w-20 h-20 rounded-xl overflow-hidden border-2 border-emerald-500/50 shadow-md bg-slate-900">
-                    <img
-                      src={imagePreview}
-                      alt="Product Preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[10px] text-emerald-300 font-bold">
-                      Attached ✓
-                    </div>
-                  </div>
+              {/* Video Upload (Labeled 'Video', preserving full description) */}
+              <div className="space-y-2 p-3 rounded-lg bg-slate-900/50 border border-slate-800/80">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                    <Video className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Video</span>
+                  </label>
+                  {videoPreview && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVideoPreview(null);
+                        setVideoFileName(null);
+                      }}
+                      className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer transition"
+                    >
+                      <X className="w-3 h-3" />
+                      Remove
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Video Asset Upload Area (Optional) */}
-          <div className="p-3.5 rounded-xl bg-[#0f172a] border border-[#334155] space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
-                <Video className="w-3.5 h-3.5 text-purple-400" />
-                <span>Upload Finished Video Asset (Optional .mp4, .mov, .webm)</span>
-              </label>
-              {videoPreview && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVideoPreview(null);
-                    setVideoFileName(null);
-                  }}
-                  className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer transition"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Remove Video
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-              <div className={videoPreview ? 'sm:col-span-8 space-y-2' : 'sm:col-span-12 space-y-2'}>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <label className="px-3.5 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                <div className="flex flex-col sm:flex-row gap-2 items-center">
+                  <label className="w-full sm:w-auto px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
                     <Upload className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Choose Video File</span>
+                    <span>Upload Video File</span>
                     <input
                       type="file"
                       accept="video/mp4,video/quicktime,video/webm"
@@ -501,26 +503,24 @@ AFFILIATE LINK: ${lead.affiliateDeepLink || targetUrl || 'https://example.com'}`
                       }}
                     />
                   </label>
-
                   {videoFileName && (
-                    <div className="flex items-center px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300 truncate">
-                      <FileVideo className="w-3.5 h-3.5 text-purple-400 mr-1.5 shrink-0" />
+                    <div className="flex items-center px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300 truncate max-w-full">
+                      <FileVideo className="w-3 h-3 text-purple-400 mr-1.5 shrink-0" />
                       <span className="truncate">{videoFileName}</span>
                     </div>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-400">
+
+                {videoPreview && (
+                  <div className="w-full rounded-lg overflow-hidden border border-purple-500/40 bg-black">
+                    <video src={videoPreview} controls className="w-full max-h-24 object-contain" />
+                  </div>
+                )}
+
+                <p className="text-[11px] text-slate-400 leading-snug">
                   If you already have a video for this product (e.g. from Vidofy or your camera), upload it here. The AI attaches it to all short-form video ad placements (TikTok, Shorts, Reels).
                 </p>
               </div>
-
-              {videoPreview && (
-                <div className="sm:col-span-4 flex items-center justify-center">
-                  <div className="w-full rounded-xl overflow-hidden border border-purple-500/40 bg-black">
-                    <video src={videoPreview} controls className="w-full max-h-28 object-contain" />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

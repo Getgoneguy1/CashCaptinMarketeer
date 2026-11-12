@@ -111,7 +111,6 @@ export async function saveSocialAdToCloud(ad: SocialAdRecord): Promise<boolean> 
 
 /**
  * Records a commercial app sale alert to Firestore: /sales_alerts/{alertId}
- * This alerts the creator (tymesup4us@gmail.com) whenever anyone buys the app or a license.
  */
 export async function recordSaleAlertToCloud(alert: {
   id: string;
@@ -128,7 +127,7 @@ export async function recordSaleAlertToCloud(alert: {
     await setDoc(alertRef, {
       ...alert,
       recordedAt: new Date().toISOString(),
-      ownerAlertEmail: 'tymesup4us@gmail.com',
+      ownerAlertEmail: 'yeahwegotthat@proton.me',
       status: 'recorded'
     });
     return true;

@@ -69,7 +69,17 @@ export function getStoredTracking(): TrackingMetrics {
       saveTracking(INITIAL_TRACKING);
       return INITIAL_TRACKING;
     }
-    return JSON.parse(raw);
+    const parsed: TrackingMetrics = JSON.parse(raw);
+    // Purge any legacy demonstration seed numbers (e.g. 150 clicks, 18 conversions, 684.50 revenue)
+    if (
+      (parsed.clicks === 150 && parsed.conversions === 18) ||
+      parsed.revenue === 684.5 ||
+      parsed.revenue === 684.50
+    ) {
+      saveTracking(INITIAL_TRACKING);
+      return INITIAL_TRACKING;
+    }
+    return parsed;
   } catch (err) {
     console.error('Failed to load tracking', err);
     return INITIAL_TRACKING;
@@ -89,16 +99,23 @@ export function getStoredClicks(): ClickEvent[] {
     const raw = localStorage.getItem(STORAGE_KEYS.CLICKS);
     if (!raw) return [];
     const parsed: ClickEvent[] = JSON.parse(raw);
-    // Purge any legacy simulated or demo clicks
+    // Purge any legacy simulated or demo clicks (including demonstration Tely AI rows)
     const cleanClicks = parsed.filter(
       (c) =>
         !c.id.includes('sim') &&
         !c.id.includes('mock') &&
         !c.id.includes('demo') &&
+        !c.offerName?.toLowerCase().includes('tely') &&
+        !c.affiliateId?.toLowerCase().includes('ty') &&
         !c.query?.toLowerCase().includes('blueprint') &&
         !c.query?.toLowerCase().includes('simulator') &&
         !c.query?.toLowerCase().includes('demo')
     );
+    if (cleanClicks.length !== parsed.length) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.CLICKS, JSON.stringify(cleanClicks));
+      } catch {}
+    }
     return cleanClicks;
   } catch (err) {
     return [];

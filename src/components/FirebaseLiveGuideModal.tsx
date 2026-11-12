@@ -112,7 +112,7 @@ export const FirebaseLiveGuideModal: React.FC<FirebaseLiveGuideModalProps> = ({
               2. <strong>Real-Time Cloud Persistence:</strong> Every offer you create, every traffic click tracked, and all social ads syndicated are automatically saved to your provisioned cloud database.
             </p>
             <p>
-              3. <strong>Instant Sales Alerts:</strong> When someone buys your app, the purchase alert is immediately recorded to Firebase and alerted to <strong className="text-amber-300">tymesup4us@gmail.com</strong>.
+              3. <strong>Instant Sales Alerts:</strong> When someone buys your app, the purchase alert is immediately recorded to Firebase and alerted to <strong className="text-amber-300">your designated administrator email</strong>.
             </p>
           </div>
 

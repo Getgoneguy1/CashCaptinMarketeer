@@ -19,6 +19,11 @@ export const AccountingCard: React.FC<AccountingCardProps> = ({
   const [isTrackerLive, setIsTrackerLive] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
+  React.useEffect(() => {
+    setConversionsInput(tracking.conversions.toString());
+    setRevenueInput(tracking.revenue.toFixed(2));
+  }, [tracking.conversions, tracking.revenue]);
+
   const handleToggleOrRefresh = () => {
     setIsRefreshing(true);
     try {

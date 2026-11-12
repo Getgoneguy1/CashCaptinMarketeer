@@ -82,7 +82,7 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
         onMasterSessionChanged({
           isMasterLoggedIn: true,
           userEmail: MASTER_OWNER_EMAIL,
-          userName: 'Ty Birchfield',
+          userName: 'Master Administrator',
           role: 'master_creator',
           viewMode: 'admin',
           loginTimestamp: new Date().toISOString()
@@ -162,9 +162,9 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
     if (valid) {
       activateLicenseKey('CAPTAIN-MASTER-2026-VIRBIS', MASTER_OWNER_EMAIL);
       const masterProfile: AppUserProfile = {
-        uid: 'master_ty_birchfield',
+        uid: 'master_administrator',
         email: MASTER_OWNER_EMAIL,
-        displayName: 'Ty Birchfield (Owner)',
+        displayName: 'Master Administrator',
         isAnonymous: false,
         isMasterOwner: true,
         licenseTier: 'master_developer',
@@ -174,40 +174,19 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
       onMasterSessionChanged({
         isMasterLoggedIn: true,
         userEmail: MASTER_OWNER_EMAIL,
-        userName: 'Ty Birchfield',
+        userName: 'Master Administrator',
         role: 'master_creator',
         viewMode: 'admin',
         loginTimestamp: new Date().toISOString()
       });
-      setStatusMsg({ type: 'success', text: 'Master Developer Access Unlocked! Welcome, Ty.' });
+      setStatusMsg({ type: 'success', text: 'Master Administrator Access Unlocked!' });
       setTimeout(() => {
         setStatusMsg(null);
         onClose();
       }, 1200);
     } else {
-      setStatusMsg({ type: 'error', text: 'Invalid Master PIN. Default is 777888.' });
+      setStatusMsg({ type: 'error', text: 'Invalid Master PIN.' });
     }
-  };
-
-  const handleInstantMasterBypass = () => {
-    const session = quickLoginMaster();
-    activateLicenseKey('CAPTAIN-MASTER-2026-VIRBIS', MASTER_OWNER_EMAIL);
-    const masterProfile: AppUserProfile = {
-      uid: 'master_ty_birchfield',
-      email: MASTER_OWNER_EMAIL,
-      displayName: 'Ty Birchfield (Owner)',
-      isAnonymous: false,
-      isMasterOwner: true,
-      licenseTier: 'master_developer',
-      createdAt: new Date().toISOString()
-    };
-    onUserChanged(masterProfile);
-    onMasterSessionChanged(session);
-    setStatusMsg({ type: 'success', text: 'Instant Master Access granted for Ty Birchfield!' });
-    setTimeout(() => {
-      setStatusMsg(null);
-      onClose();
-    }, 1200);
   };
 
   const handleLogout = async () => {
@@ -307,22 +286,6 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
               </button>
             </>
           )}
-
-          <button
-            onClick={() => {
-              setActiveTab('master');
-              setStatusMsg(null);
-            }}
-            className={`px-3 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
-              activeTab === 'master'
-                ? 'bg-amber-500 text-slate-950 font-black shadow'
-                : 'text-amber-400/80 hover:text-amber-300'
-            }`}
-            title="Creator & Master Owner Login"
-          >
-            <Crown className="w-3.5 h-3.5" />
-            <span>Master PIN</span>
-          </button>
         </div>
 
         {/* Toast Notification */}
@@ -568,17 +531,6 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
                   <span>Verify Master Credentials</span>
                 </button>
               </form>
-
-              <div className="pt-2 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={handleInstantMasterBypass}
-                  className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Instant 1-Click Ty Birchfield Bypass</span>
-                </button>
-              </div>
             </div>
           )}
 

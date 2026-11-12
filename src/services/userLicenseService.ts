@@ -48,7 +48,7 @@ export const TIER_LIMITS = {
     price: '$197'
   },
   master_developer: {
-    name: 'Master Developer (Ty Birchfield)',
+    name: 'Master Developer (Administrator)',
     slots: 999999,
     maxLeads: 999999,
     maxChannels: 999999,
@@ -59,7 +59,7 @@ export const TIER_LIMITS = {
 const DEFAULT_USER_LICENSE: UserLicenseState = {
   tier: 'lifetime',
   licenseKey: 'CASH-CAPTAIN-AUTOMATED-FULL-ACCESS',
-  customerName: 'Ty Birchfield',
+  customerName: 'Licensed Marketeer',
   customerEmail: 'yeahwegotthat@proton.me',
   totalSlotsAllowed: 999999,
   consumedSlots: [],
@@ -176,7 +176,7 @@ export function activateLicenseKey(inputKey: string, userEmail?: string): {
       tier: 'master_developer',
       licenseKey: cleanKey,
       customerEmail: MASTER_OWNER_EMAIL,
-      customerName: 'Ty Birchfield (Master Developer)',
+      customerName: 'Master Developer',
       totalSlotsAllowed: 999999,
       maxLeadsPerProduct: 999999,
       maxChannelsPerProduct: 999999,
@@ -273,8 +273,9 @@ export function activateLicenseKey(inputKey: string, userEmail?: string): {
     };
   }
 
-  // Free / Sponsor / Trial / Test Group Keys issued by Ty
+  // Free / Sponsor / Trial / Beta / Test Group Keys
   if (
+    cleanKey.includes('BETA') ||
     cleanKey.includes('SPONSOR') ||
     cleanKey.includes('FREE') ||
     cleanKey.includes('TRIAL') ||

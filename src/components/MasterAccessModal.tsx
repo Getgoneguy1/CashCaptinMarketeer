@@ -73,7 +73,7 @@ export const MasterAccessModal: React.FC<MasterAccessModalProps> = ({
     const success = loginWithMasterCredentials(emailInput, keyInput);
     if (success) {
       activateLicenseKey('CAPTAIN-MASTER-2026-VIRBIS', MASTER_OWNER_EMAIL);
-      setSuccessMsg('Master Access granted! Welcome, Ty.');
+      setSuccessMsg('Master Administrator Access granted.');
       const updated: MasterAuthSession = {
         isMasterLoggedIn: true,
         userEmail: MASTER_OWNER_EMAIL,
@@ -86,7 +86,7 @@ export const MasterAccessModal: React.FC<MasterAccessModalProps> = ({
       setKeyInput('');
       setTimeout(() => setSuccessMsg(''), 3000);
     } else {
-      setErrorMsg('Invalid credentials. Enter your Master PIN (777888) or Owner Key.');
+      setErrorMsg('Invalid credentials. Enter your Master PIN or Owner Key.');
     }
   };
 
@@ -94,7 +94,7 @@ export const MasterAccessModal: React.FC<MasterAccessModalProps> = ({
     activateLicenseKey('CAPTAIN-MASTER-2026-VIRBIS', MASTER_OWNER_EMAIL);
     const session = quickLoginMaster();
     onSessionChange(session);
-    setSuccessMsg('Instant Master Access unlocked for Ty Birchfield.');
+    setSuccessMsg('Master Administrator Access unlocked.');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 

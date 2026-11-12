@@ -226,7 +226,7 @@ export const MasterTopTierSuite: React.FC<MasterTopTierSuiteProps> = ({
                 Master Control Suite &bull; Full Authority
               </h2>
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                Active Owner: Ty Birchfield
+                Active: Master Administrator
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -321,7 +321,7 @@ export const MasterTopTierSuite: React.FC<MasterTopTierSuiteProps> = ({
                 value={appSettings.paypalEmail}
                 onChange={(e) => setAppSettings({ ...appSettings, paypalEmail: e.target.value })}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-emerald-300 font-mono font-semibold focus:border-emerald-500 outline-none"
-                placeholder="tybirchfield42@gmail.com"
+                placeholder="yeahwegotthat@proton.me"
               />
             </div>
 
@@ -530,7 +530,7 @@ export const MasterTopTierSuite: React.FC<MasterTopTierSuiteProps> = ({
                 <button
                   onClick={() =>
                     copyToClipboard(
-                      `Subject: Your Cash Captain Marketeer License & Access Details\n\nHi ${mintedKey.customerName},\n\nThank you for purchasing Cash Captain Marketeer!\n\nHere are your official access details:\n- License Tier: ${mintedKey.plan}\n- License Activation Key: ${mintedKey.key}\n- Access Portal: ${appSettings.liveDomain}\n- Founder Support: ${MASTER_OWNER_EMAIL}\n\nTo begin, open the access portal above and enter your activation key to unlock your station.\n\nAll for cash, and cash for all!\n\nBest regards,\nTy Birchfield\n${appSettings.companyName}`,
+                      `Subject: Your Cash Captain Marketeer License & Access Details\n\nHi ${mintedKey.customerName},\n\nThank you for purchasing Cash Captain Marketeer!\n\nHere are your official access details:\n- License Tier: ${mintedKey.plan}\n- License Activation Key: ${mintedKey.key}\n- Access Portal: ${appSettings.liveDomain}\n- Founder Support: ${MASTER_OWNER_EMAIL}\n\nTo begin, open the access portal above and enter your activation key to unlock your station.\n\nAll for cash, and cash for all!\n\nBest regards,\nCash Captain Team\n${appSettings.companyName}`,
                       'email-template'
                     )
                   }
@@ -542,7 +542,7 @@ export const MasterTopTierSuite: React.FC<MasterTopTierSuiteProps> = ({
               </div>
 
               <div className="text-[11px] font-mono text-slate-300 whitespace-pre-wrap select-all bg-slate-900/60 p-2.5 rounded border border-slate-800">
-                {`Subject: Your Cash Captain Marketeer License & Access Details\n\nHi ${mintedKey.customerName},\n\nThank you for purchasing Cash Captain Marketeer!\n\nHere are your official access details:\n- License Tier: ${mintedKey.plan}\n- License Activation Key: ${mintedKey.key}\n- Access Portal: ${appSettings.liveDomain}\n- Founder Support: ${MASTER_OWNER_EMAIL}\n\nBest regards,\nTy Birchfield • ${appSettings.companyName}`}
+                {`Subject: Your Cash Captain Marketeer License & Access Details\n\nHi ${mintedKey.customerName},\n\nThank you for purchasing Cash Captain Marketeer!\n\nHere are your official access details:\n- License Tier: ${mintedKey.plan}\n- License Activation Key: ${mintedKey.key}\n- Access Portal: ${appSettings.liveDomain}\n- Founder Support: ${MASTER_OWNER_EMAIL}\n\nBest regards,\nCash Captain Team • ${appSettings.companyName}`}
               </div>
             </div>
           </div>

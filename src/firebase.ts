@@ -46,7 +46,7 @@ export async function ensureAuthUser(): Promise<User> {
           const fallbackUid = localStorage.getItem('cashcaptin_local_uid') || `user_${Date.now()}`;
           localStorage.setItem('cashcaptin_local_uid', fallbackUid);
           unsubscribe();
-          resolve({ uid: fallbackUid, email: 'tymesup4us@gmail.com' } as unknown as User);
+          resolve({ uid: fallbackUid, email: 'guest@cashcaptain.local' } as unknown as User);
         }
       }
     });

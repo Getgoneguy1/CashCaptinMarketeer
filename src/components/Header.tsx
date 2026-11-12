@@ -60,301 +60,282 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   onOpenAuthModal
 }) => {
-  // Secret multi-tap on logo to open Master Login discreetly
-  const [logoClicks, setLogoClicks] = useState(0);
+  // Secret access (10 clicks within 4s window on Logo or Crown)
+  const [secretClicks, setSecretClicks] = useState(0);
 
-  const handleLogoClick = () => {
-    const next = logoClicks + 1;
-    if (next >= 3) {
-      setLogoClicks(0);
+  const handleSecretClick = () => {
+    const next = secretClicks + 1;
+    if (next >= 10) {
+      setSecretClicks(0);
       onOpenMasterAccess();
     } else {
-      setLogoClicks(next);
-      setTimeout(() => setLogoClicks(0), 1200);
+      setSecretClicks(next);
+      setTimeout(() => setSecretClicks(0), 4000);
     }
   };
 
   return (
-    <header className="border-b border-zinc-800 bg-black sticky top-0 z-40 shadow-xl">
-      <div className="max-w-6xl mx-auto px-4 py-3.5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Logo & Branding */}
-          <div className="flex items-center gap-4 sm:gap-6 md:gap-7">
+    <header className="border-b border-zinc-800/90 bg-black/95 backdrop-blur sticky top-0 z-40 shadow-lg">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5">
+        {/* Top Brand & Actions Bar */}
+        <div className="flex items-center justify-between gap-2.5">
+          {/* Logo & Title */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
             <button
-              onClick={handleLogoClick}
-              title="Cash Captain Marketeer™"
-              className="relative p-1 bg-transparent border-0 cursor-pointer transition-transform duration-200 select-none shrink-0 group focus:outline-none hover:scale-105 active:scale-95"
-              aria-label="Cash Captain Logo"
+              onClick={handleSecretClick}
+              className="p-0.5 bg-transparent border-0 cursor-pointer transition-transform duration-150 select-none shrink-0 group focus:outline-none hover:scale-105 active:scale-95"
+              aria-label="Cash Captain"
             >
-              <CashCaptainLogo className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 drop-shadow-[0_4px_28px_rgba(57,255,20,0.35)] group-hover:drop-shadow-[0_6px_36px_rgba(57,255,20,0.6)] transition-all" />
+              <CashCaptainLogo className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 drop-shadow-[0_2px_14px_rgba(57,255,20,0.35)]" />
             </button>
-            <div className="flex flex-col justify-center">
-              {/* App Name - Stepped Title Formation */}
-              {/* Step 1: Cash Captain with prominent Neon Green Capital C's & Silver text */}
-              <div className="flex items-baseline tracking-tight select-none">
-                <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#39ff14] drop-shadow-[0_0_14px_rgba(57,255,20,0.7)] leading-none filter">
-                  C
+
+            <div className="flex flex-col justify-center min-w-0">
+              <div className="flex items-baseline tracking-tight select-none flex-wrap">
+                <span className="text-xl sm:text-2xl font-black text-[#39ff14] leading-none">C</span>
+                <span className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-200 mr-1.5 leading-none">ash</span>
+                <span className="text-xl sm:text-2xl font-black text-[#39ff14] leading-none">C</span>
+                <span className="text-base sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-200 leading-none">aptain</span>
+                <span className="text-sm sm:text-base font-black text-[#39ff14] italic ml-1.5">Marketeer!™</span>
+                <span className="text-[10px] px-1 py-0.2 rounded bg-zinc-900 text-[#39ff14] font-mono border border-emerald-500/30 ml-1.5">
+                  v2.6
                 </span>
-                <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 mr-2.5 sm:mr-4 leading-none">
-                  ash
-                </span>
-                <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#39ff14] drop-shadow-[0_0_14px_rgba(57,255,20,0.7)] leading-none filter">
-                  C
-                </span>
-                <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 leading-none">
-                  aptain
-                </span>
+                <button
+                  type="button"
+                  onClick={handleSecretClick}
+                  className="p-0.5 ml-1 bg-transparent border-0 cursor-pointer text-emerald-500/20 hover:text-emerald-400 transition-colors focus:outline-none"
+                  aria-label="Marketeer Crown"
+                >
+                  <Crown className="w-3 h-3" />
+                </button>
               </div>
 
-              {/* Step 2: Marketeer! scooted to the right in step formation with neon swoosh */}
-              <div className="pl-6 sm:pl-10 md:pl-12 mt-1 sm:mt-1.5 flex flex-col items-start">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-wide text-[#39ff14] drop-shadow-[0_0_16px_rgba(57,255,20,0.6)] italic">
-                    Marketeer!™
-                  </h2>
-                  <span className="text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded bg-zinc-900 text-[#39ff14] font-mono font-medium border border-emerald-500/30">
-                    v2.6
-                  </span>
-                </div>
-                {/* Energetic Neon Green Underline Swoosh as requested in the reference sketch */}
-                <svg className="w-36 sm:w-48 h-2.5 text-[#39ff14] mt-0.5 -ml-0.5 overflow-visible" viewBox="0 0 180 12" fill="none">
-                  <path
-                    d="M 2,4 C 45,10 120,11 175,2 C 160,5 125,9 65,7"
-                    fill="#39ff14"
-                    className="drop-shadow-[0_0_6px_rgba(57,255,20,0.9)]"
-                  />
-                </svg>
-              </div>
-
-              {/* Tagline directly under the stepped name */}
-              <p className="text-xs sm:text-sm text-slate-300 font-medium pl-6 sm:pl-10 md:pl-12 mt-1 leading-snug">
-                Autonomous AI Buyer Radar, Zero-Ban Compliance &amp; Automatic Link Placement
+              {/* Discreet subtitle on tablet/desktop */}
+              <p className="hidden md:block text-[11px] text-slate-400 font-medium leading-tight mt-0.5">
+                Autonomous AI Buyer Radar &bull; Yeah We Got That Online &bull; A Virbis.com Company
               </p>
-
-              {/* Unboxed Yeah We Got That • A Virbis.com Company */}
-              <div className="text-xs text-slate-400 font-normal tracking-wide flex items-center gap-1.5 pl-6 sm:pl-10 md:pl-12 mt-1 flex-wrap">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#39ff14] shadow-[0_0_6px_#39ff14] shrink-0"></span>
-                <span className="text-slate-300 font-medium">Yeah We Got That Online</span>
-                <span className="text-zinc-600">•</span>
-                <span className="text-slate-400">A Virbis.com Company</span>
-                {affiliateProEnabled && (
-                  <>
-                    <span className="text-zinc-600">•</span>
-                    <span className="text-[#39ff14] font-mono text-[11px]">Affiliate Pro Linked</span>
-                  </>
-                )}
-              </div>
             </div>
           </div>
 
           {/* Action Bar (Top Right) */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* ONLY DISPLAYED WHEN TY IS LOGGED IN AS MASTER (HIDDEN FROM ALL REGULAR CUSTOMERS) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* ONLY DISPLAYED WHEN IN ADMIN MODE */}
             {masterSession.isMasterLoggedIn && (
-              <div className="flex items-center bg-slate-950/90 border border-emerald-500/40 rounded-lg p-1 gap-1 text-xs shadow-md">
+              <div className="hidden sm:flex items-center bg-slate-950/90 border border-emerald-500/40 rounded-lg p-0.5 gap-1 text-[11px] shadow-sm">
                 <button
                   onClick={onToggleMasterViewMode}
-                  className={`px-2.5 py-1 rounded text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                     masterSession.viewMode === 'admin'
-                      ? 'bg-emerald-500 text-slate-950 font-black shadow-sm'
+                      ? 'bg-emerald-500 text-slate-950 font-black'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                   title="Switch to Master Admin Controls"
                 >
-                  <Crown className="w-3 h-3" />
-                  <span>Admin Mode</span>
+                  <Crown className="w-2.5 h-2.5" />
+                  <span>Admin</span>
                 </button>
                 <button
                   onClick={onToggleMasterViewMode}
-                  className={`px-2.5 py-1 rounded text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                     masterSession.viewMode === 'customer'
-                      ? 'bg-slate-700 text-emerald-300 font-black shadow-sm'
+                      ? 'bg-slate-700 text-emerald-300 font-black'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                   title="View app exactly as a customer sees it"
                 >
-                  <Eye className="w-3 h-3" />
-                  <span>Customer View</span>
+                  <Eye className="w-2.5 h-2.5" />
+                  <span>Customer</span>
                 </button>
                 <button
                   onClick={onOpenMasterAccess}
                   className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors"
                   title="Open Master Suite & Settings"
                 >
-                  <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+                  <Sliders className="w-3 h-3 text-emerald-400" />
                 </button>
               </div>
             )}
 
-            {/* User Account / Sign In Button (First Spot) */}
+            {/* User Account / Sign In Button */}
             {currentUser ? (
               <button
                 onClick={onOpenAuthModal}
-                className="px-3 py-2 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-emerald-500/50 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                title="View My Account & Campaign Quota"
+                className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition-all flex items-center gap-1 cursor-pointer"
+                title="View My Account"
               >
-                <div className="w-2 h-2 rounded-full bg-[#39ff14] animate-pulse"></div>
-                <User className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="max-w-[120px] truncate">{currentUser.displayName || currentUser.email}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#39ff14] animate-pulse"></div>
+                <User className="w-3 h-3 text-emerald-400" />
+                <span className="max-w-[80px] sm:max-w-[110px] truncate">{currentUser.displayName || currentUser.email}</span>
               </button>
             ) : (
               <button
                 onClick={onOpenAuthModal}
-                className="px-3.5 py-2 rounded-lg font-black text-xs bg-[#39ff14] hover:bg-[#32e012] text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20"
-                title="Sign in or create free account to save your offers"
+                className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg font-black text-[11px] sm:text-xs bg-[#39ff14] hover:bg-[#32e012] text-slate-950 transition-all flex items-center gap-1 cursor-pointer shadow-sm hover:scale-102"
+                title="Sign in or register"
               >
-                <KeyRound className="w-3.5 h-3.5 text-slate-950" />
-                <span>Log In / Sign Up</span>
+                <KeyRound className="w-3 h-3 text-slate-950" />
+                <span>Sign In</span>
               </button>
             )}
 
             {/* Purchase App License / Key Activation */}
             <button
               onClick={onOpenLicenseModal}
-              className="px-3.5 py-2 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20"
+              className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg font-black text-[11px] sm:text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1 cursor-pointer shadow-sm hover:scale-102"
               title="Purchase App License or Activate Campaign Key"
             >
-              <KeyRound className="w-3.5 h-3.5 text-slate-950" />
-              <span>Buy License</span>
+              <KeyRound className="w-3 h-3 text-slate-950" />
+              <span>License</span>
             </button>
-
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1 sm:gap-2 mt-3.5 border-t border-zinc-800/80 pt-2.5 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('autopilot')}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'autopilot'
-                ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
-            }`}
-          >
-            <Crosshair className={`w-4 h-4 ${activeTab === 'autopilot' ? 'text-slate-950' : 'text-emerald-400'}`} />
-            <span>⚡ AI Auto-Pilot</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('offers')}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'offers'
-                ? 'bg-slate-700 text-white font-bold border border-slate-600 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <span>My Offers</span>
-            <span className="text-[11px] px-1.5 py-0.2 rounded bg-slate-950 text-emerald-400 font-mono">
-              {offerCount}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('hubs')}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'hubs'
-                ? 'bg-slate-700 text-white font-bold border border-slate-600 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <FolderGit2 className="w-4 h-4 text-emerald-400" />
-            <span>Search Hubs</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('social')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'social'
-                ? 'bg-slate-700 text-emerald-300 font-extrabold border border-emerald-500/40 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <Share2 className="w-4 h-4 text-emerald-400" />
-            <span>📢 Social Blast Hub</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('email')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'email'
-                ? 'bg-slate-700 text-emerald-300 font-extrabold border border-emerald-500/40 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <Mail className="w-4 h-4 text-emerald-400" />
-            <span>📬 Email Updates</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('affiliate_pro')}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'affiliate_pro'
-                ? 'bg-slate-700 text-emerald-300 font-bold border border-emerald-500/40 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            <span>3-in-1 AI Suite</span>
-            {affiliateProEnabled && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('ledger')}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'ledger'
-                ? 'bg-slate-700 text-white font-bold border border-slate-600 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <span>Tracking</span>
-            <span className="text-[11px] px-1.5 py-0.2 rounded bg-slate-950 text-emerald-400 font-mono">
-              {totalClicks}
-            </span>
-          </button>
-
-          {/* Customer-Facing Affiliate Program: 40% Commissions */}
-          <button
-            onClick={() => setActiveTab('partner')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'partner'
-                ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20'
-                : 'text-emerald-400 hover:text-white hover:bg-emerald-950/40 border border-emerald-500/30'
-            }`}
-          >
-            <span>🤝 Partner &amp; Earn 40%</span>
-          </button>
-
-          {/* ONLY DISPLAY DEVELOPER SALES SUITE TO MASTER TY BIRCHFIELD IN ADMIN MODE */}
-          {masterSession.isMasterLoggedIn && masterSession.viewMode === 'admin' && (
+        {/* Station Navigation Bar - Thinner, Sleeker, Low-Profile Buttons */}
+        <div className="mt-2 pt-1.5 border-t border-zinc-800/70">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
+            {/* 1. AI Auto-Pilot (Emerald Box) */}
             <button
-              onClick={() => setActiveTab('sales')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                activeTab === 'sales'
-                  ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                  : 'text-amber-400 hover:text-white hover:bg-amber-950/40 border border-amber-500/40'
+              onClick={() => setActiveTab('autopilot')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border ${
+                activeTab === 'autopilot'
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-300 font-extrabold shadow-sm'
+                  : 'bg-emerald-950/70 hover:bg-emerald-900/90 text-emerald-200 border-emerald-500/50'
               }`}
-              title="Developer Checkout Links & Master Sales Materials (Only visible to Ty)"
             >
-              <Crown className="w-3.5 h-3.5 text-amber-300" />
-              <span>Developer Sales Kit</span>
+              <Crosshair className={`w-3 h-3 ${activeTab === 'autopilot' ? 'text-slate-950' : 'text-emerald-400'}`} />
+              <span>⚡ Auto-Pilot</span>
             </button>
-          )}
 
-          {/* Last item: Utilities */}
-          <button
-            onClick={() => setActiveTab('utilities')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-              activeTab === 'utilities'
-                ? 'bg-slate-700 text-white font-bold border border-slate-600 shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-            title="System Utilities, Manuals, Bulk Importer, and Backups"
-          >
-            <span>🛠️ Utilities & Backup</span>
-          </button>
+            {/* 2. My Offers (Deep Blue Box) */}
+            <button
+              onClick={() => setActiveTab('offers')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'offers'
+                  ? 'bg-blue-600 text-white border-blue-300 font-extrabold shadow-sm'
+                  : 'bg-blue-950/70 hover:bg-blue-900/90 text-blue-200 border-blue-500/50'
+              }`}
+            >
+              <span>📁 Offers</span>
+              <span className={`text-[10px] px-1 rounded font-mono font-bold ${
+                activeTab === 'offers' ? 'bg-slate-950 text-blue-300' : 'bg-slate-950 text-blue-400 border border-blue-500/30'
+              }`}>
+                {offerCount}
+              </span>
+            </button>
+
+            {/* 3. Search Hubs (Sky/Cyan Box) */}
+            <button
+              onClick={() => setActiveTab('hubs')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'hubs'
+                  ? 'bg-sky-500 text-slate-950 border-sky-200 font-extrabold shadow-sm'
+                  : 'bg-sky-950/70 hover:bg-sky-900/90 text-sky-200 border-sky-400/50'
+              }`}
+            >
+              <FolderGit2 className={`w-3 h-3 ${activeTab === 'hubs' ? 'text-slate-950' : 'text-sky-300'}`} />
+              <span>🔍 Hubs</span>
+            </button>
+
+            {/* 4. Social Blast Hub (Purple Box) */}
+            <button
+              onClick={() => setActiveTab('social')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'social'
+                  ? 'bg-purple-600 text-white border-purple-300 font-extrabold shadow-sm'
+                  : 'bg-purple-950/70 hover:bg-purple-900/90 text-purple-200 border-purple-400/50'
+              }`}
+            >
+              <Share2 className={`w-3 h-3 ${activeTab === 'social' ? 'text-white' : 'text-purple-300'}`} />
+              <span>📢 Social</span>
+            </button>
+
+            {/* 5. Email Updates (Rose Box) */}
+            <button
+              onClick={() => setActiveTab('email')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'email'
+                  ? 'bg-rose-600 text-white border-rose-300 font-extrabold shadow-sm'
+                  : 'bg-rose-950/70 hover:bg-rose-900/90 text-rose-200 border-rose-400/50'
+              }`}
+            >
+              <Mail className={`w-3 h-3 ${activeTab === 'email' ? 'text-white' : 'text-rose-300'}`} />
+              <span>📬 Email</span>
+            </button>
+
+            {/* 6. 3-in-1 AI Suite (Amber Box) */}
+            <button
+              onClick={() => setActiveTab('affiliate_pro')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'affiliate_pro'
+                  ? 'bg-amber-500 text-slate-950 border-amber-200 font-extrabold shadow-sm'
+                  : 'bg-amber-950/70 hover:bg-amber-900/90 text-amber-200 border-amber-400/50'
+              }`}
+            >
+              <Sparkles className={`w-3 h-3 ${activeTab === 'affiliate_pro' ? 'text-slate-950' : 'text-amber-300'}`} />
+              <span>✨ 3-in-1</span>
+              {affiliateProEnabled && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              )}
+            </button>
+
+            {/* 7. Tracking & Ledger (Teal Box) */}
+            <button
+              onClick={() => setActiveTab('ledger')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'ledger'
+                  ? 'bg-teal-500 text-slate-950 border-teal-200 font-extrabold shadow-sm'
+                  : 'bg-teal-950/70 hover:bg-teal-900/90 text-teal-200 border-teal-400/50'
+              }`}
+            >
+              <TrendingUp className={`w-3 h-3 ${activeTab === 'ledger' ? 'text-slate-950' : 'text-teal-300'}`} />
+              <span>📈 Tracking</span>
+              <span className={`text-[10px] px-1 rounded font-mono font-bold ${
+                activeTab === 'ledger' ? 'bg-slate-950 text-teal-300' : 'bg-slate-950 text-teal-400 border border-teal-500/30'
+              }`}>
+                {totalClicks}
+              </span>
+            </button>
+
+            {/* 8. Partner Program 40% (Rich Emerald Box) */}
+            <button
+              onClick={() => setActiveTab('partner')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'partner'
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-200 font-extrabold shadow-sm'
+                  : 'bg-emerald-950/75 hover:bg-emerald-900/90 text-emerald-300 border-emerald-400/50'
+              }`}
+            >
+              <span>🤝 Partner (40%)</span>
+            </button>
+
+            {/* Master-Only: Developer Sales Kit (Golden Box) */}
+            {masterSession.isMasterLoggedIn && masterSession.viewMode === 'admin' && (
+              <button
+                onClick={() => setActiveTab('sales')}
+                className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                  activeTab === 'sales'
+                    ? 'bg-amber-400 text-slate-950 border-amber-200 font-extrabold shadow-sm'
+                    : 'bg-amber-950/70 hover:bg-amber-900/90 text-amber-300 border-amber-500/50'
+                }`}
+                title="Developer Checkout Links & Master Sales Materials"
+              >
+                <Crown className="w-3 h-3 text-amber-300" />
+                <span>👑 Sales</span>
+              </button>
+            )}
+
+            {/* 9. Utilities & Backup (Slate Box) */}
+            <button
+              onClick={() => setActiveTab('utilities')}
+              className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer border ${
+                activeTab === 'utilities'
+                  ? 'bg-slate-600 text-white border-slate-300 font-extrabold shadow-sm'
+                  : 'bg-slate-800/80 hover:bg-slate-700/90 text-slate-300 border-slate-600/50'
+              }`}
+              title="System Utilities, Manuals, Bulk Importer, and Backups"
+            >
+              <span>🛠️ Utilities</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>

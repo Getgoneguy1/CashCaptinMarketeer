@@ -92,7 +92,7 @@ export const CommercialSalesKit: React.FC<CommercialSalesKitProps> = ({ appSetti
             </svg>
           </div>
           <p className="text-xs sm:text-sm text-[#39ff14] font-semibold mt-2.5">
-            Y.W.G.T Online! • A Virbis.com Company (Founded by Ty Birchfield) &bull; <span className="text-amber-300">"All for Cash, and Cash for All!"</span>
+            Y.W.G.T Online! • A Virbis.com Company &bull; <span className="text-amber-300">"All for Cash, and Cash for All!"</span>
           </p>
         </div>
         <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
